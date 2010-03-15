@@ -1,4 +1,4 @@
-package org.zeuzgroup.cache4guice.aop;
+package org.slurry.cache4guice.aop;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;

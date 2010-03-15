@@ -1,9 +1,9 @@
-package org.zeuzgroup.cache4guice.module;
+package org.slurry.cache4guice.module;
 
 import net.sf.ehcache.CacheManager;
 
-import org.zeuzgroup.cache4guice.annotation.Cached;
-import org.zeuzgroup.cache4guice.aop.CacheInterceptor;
+import org.slurry.cache4guice.annotation.Cached;
+import org.slurry.cache4guice.aop.CacheInterceptor;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matchers;
