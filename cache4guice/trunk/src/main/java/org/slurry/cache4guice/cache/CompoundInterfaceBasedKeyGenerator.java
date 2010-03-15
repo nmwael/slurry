@@ -3,7 +3,7 @@ package org.slurry.cache4guice.cache;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slurry.cache4guice.aop.CacheKeyGenerator;
 
-public class CompoundInterfaceBasedKey implements CacheKeyGenerator {
+public class CompoundInterfaceBasedKeyGenerator implements CacheKeyGenerator {
 
 	@Override
 	public String getCacheKey(MethodInvocation invocation) {

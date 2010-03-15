@@ -3,12 +3,15 @@ package org.slurry.cache4guice.cache;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slurry.cache4guice.aop.CacheKeyGenerator;
 
-public class SimpleInterfacedBasedKey implements CacheKeyGenerator {
+public class StringBasedKeyGenerator implements CacheKeyGenerator {
 
 	@Override
 	public String getCacheKey(MethodInvocation invocation) {
-		// TODO Auto-generated method stub
-		return null;
+		String key = "";
+		for (Object o : invocation.getArguments()) {
+			key += ":" + o.toString();
+		}
+		return key;
 	}
 
 }
