@@ -1,4 +1,4 @@
-package org.zeuzgroup.cache4guice;
+package org.slurry.cache4guice;
 
 /**
  * Hello world!
