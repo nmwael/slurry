@@ -1,6 +1,8 @@
 package org.slurry.cache4guice;
 
 
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,19 +41,49 @@ public class Cache4GuiceBenchMarkTest {
 		
 		Stopwatch stopwatch=new Stopwatch();
 		//Got to cache!
-		cacheCalculator.calculateSomethingWild(2);
+		Assert.assertEquals(2,  cacheCalculator.calculateSomethingWild(2));
 		
 		logger.debug("Done calculating Cached Warmup {} ms ",stopwatch.reset());
 
 		stopwatch=new Stopwatch();
 		
-		cacheCalculator.calculateSomethingWild(2);
+		Assert.assertEquals(2,  cacheCalculator.calculateSomethingWild(2));
 		
 		logger.debug("Done calculating Cached {} ms ",stopwatch.reset());
 		
 		stopwatch=new Stopwatch();
 		
-		nonCacheCalculator.calculateSomethingWild(2);
+		Assert.assertEquals(2,  nonCacheCalculator.calculateSomethingWild(2));
+		
+		logger.debug("Done calculating  Non Cached {} ms ",stopwatch.reset());
+
+	}
+	
+	@Test
+	public void checkingCacheCollision() throws InterruptedException {
+		
+		minimalTest();
+		
+		Stopwatch stopwatch=new Stopwatch();
+		//Got to cache!
+		Assert.assertEquals(4,  cacheCalculator.calculateSomethingWild(2,2));
+		
+		
+		logger.debug("Done calculating Cached Warmup {} ms ",stopwatch.reset());
+
+		stopwatch=new Stopwatch();
+		
+		Assert.assertEquals(4,  cacheCalculator.calculateSomethingWild(2,2));
+		
+		
+		
+		logger.debug("Done calculating Cached {} ms ",stopwatch.reset());
+		
+		stopwatch=new Stopwatch();
+		
+		Assert.assertEquals(4,  nonCacheCalculator.calculateSomethingWild(2,2));
+		
+		
 		
 		logger.debug("Done calculating  Non Cached {} ms ",stopwatch.reset());
 
