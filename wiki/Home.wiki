@@ -1,0 +1,12 @@
+#summary Overview of what slurry has to offer
+
+= Introduction =
+
+At this writing slurry only consists of one project,
+
+cache4guice
+
+A possible addition could be
+
+quartz4guice
+
