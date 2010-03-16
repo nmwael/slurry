@@ -68,8 +68,7 @@ public class CacheInterceptor implements MethodInterceptor {
 	}
 
 	private String getCacheName(MethodInvocation invocation) {
-		return invocation.getClass().getCanonicalName() + ":"
-				+ invocation.getMethod();
+		return invocation.getMethod().toString();
 	}
 
 	@Inject
