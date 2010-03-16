@@ -2,7 +2,7 @@
 
 = Introduction =
 
-cache4guice is a simple annotation based cache integration for ehcache.
+cache4guice is a simple annotation based cache integration for http://ehcache.org/ .
 
 
 = Details =
