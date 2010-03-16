@@ -1,0 +1,13 @@
+#summary cache4guice= a cache 4 guice
+
+= Introduction =
+
+cache4guice is a simple annotation based cache integration for ehcache.
+
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
