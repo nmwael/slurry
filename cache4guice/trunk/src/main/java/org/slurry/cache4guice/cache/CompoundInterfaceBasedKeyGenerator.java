@@ -1,12 +1,9 @@
 package org.slurry.cache4guice.cache;
 
-import org.aopalliance.intercept.MethodInvocation;
-import org.slurry.cache4guice.aop.CacheKeyGenerator;
-
-public class CompoundInterfaceBasedKeyGenerator implements CacheKeyGenerator {
+public class CompoundInterfaceBasedKeyGenerator extends BaseKeyGenerator {
 
 	@Override
-	public String getCacheKey(MethodInvocation invocation) {
+	protected String getKey(Object o) {
 		// TODO Auto-generated method stub
 		return null;
 	}

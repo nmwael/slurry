@@ -1,14 +1,19 @@
 package org.slurry.cache4guice.cache;
 
-import org.aopalliance.intercept.MethodInvocation;
-import org.slurry.cache4guice.aop.CacheKeyGenerator;
+/**
+ * use this if all your objects in cacheable methods implements a secure id for caching
+ * @author nino.martinez.wael@gmail.com
+ *
+ */
+public class SimpleInterfacedBasedKeyGenerator extends BaseKeyGenerator {
 
-public class SimpleInterfacedBasedKeyGenerator implements CacheKeyGenerator {
-
+	
 	@Override
-	public String getCacheKey(MethodInvocation invocation) {
-		// TODO Auto-generated method stub
-		return null;
+	protected String getKey(Object o) {
+		HasCacheID hasCacheID= HasCacheID.class.cast(o);
+		return hasCacheID.GetCacheableID();
 	}
+
+
 
 }
