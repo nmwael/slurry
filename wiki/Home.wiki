@@ -4,9 +4,8 @@
 
 At this writing slurry only consists of one project,
 
-cache4guice
+[WikiSyntax cache4guice]
 
 A possible addition could be
 
 quartz4guice
-
