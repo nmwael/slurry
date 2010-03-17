@@ -2,7 +2,7 @@ package org.slurry.cache4guice;
 
 import com.google.inject.AbstractModule;
 
-public class TestModule extends AbstractModule {
+public class GuiceModule extends AbstractModule {
 
 	@Override
 	protected void configure() {

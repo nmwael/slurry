@@ -5,7 +5,7 @@ import org.slurry.cache4guice.aop.CacheKeyGenerator;
 
 public abstract class BaseKeyGenerator implements CacheKeyGenerator {
 
-	@Override
+
 	public String getCacheKey(MethodInvocation invocation) {
 		String key = "";
 		for (Object o : invocation.getArguments()) {

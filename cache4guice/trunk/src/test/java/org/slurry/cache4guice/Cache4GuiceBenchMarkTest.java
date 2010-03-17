@@ -30,7 +30,7 @@ public class Cache4GuiceBenchMarkTest {
 		
 		logger=LoggerFactory.getLogger(Cache4GuiceBenchMarkTest.class);
 
-		injector = Guice.createInjector(new CacheModule(), new TestModule());
+		injector = Guice.createInjector(new CacheModule(), new GuiceModule());
 
 		cacheCalculator = injector.getInstance(Calculator.class);
 
