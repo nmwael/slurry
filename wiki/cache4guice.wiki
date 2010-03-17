@@ -1,4 +1,4 @@
-#summary cache4guice= a cache 4 guice
+#summary cache4guice= a cache for guice
 
 = Introduction =
 
@@ -36,4 +36,3 @@ To determine if a cache are hit or not, you need an keyGenerator.
 Cache4Guice provides 3 different implementations, either a StringBasedKeyGenerator a Interface based or a compound based.
 
 To override, subclass CacheModule and override getCacheKeyGenerator or roll your own module.
-
