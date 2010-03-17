@@ -1,4 +1,5 @@
 #summary cache4guice= a cache for guice
+#labels Featured
 
 = Introduction =
 
