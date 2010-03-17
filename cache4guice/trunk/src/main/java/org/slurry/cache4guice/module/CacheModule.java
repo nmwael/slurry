@@ -21,7 +21,7 @@ public class CacheModule extends AbstractModule {
 				cacheInterceptor);
 	}
 
-	private Class getCacheKeyGeneratorClass() {
+	protected Class getCacheKeyGeneratorClass() {
 
 		return StringBasedKeyGenerator.class;
 	}
