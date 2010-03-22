@@ -15,6 +15,7 @@
 
 	<modules>
 		<module>cache4guice/trunk/</module>
+		<module>quartz4guice/trunk/</module>
 	</modules>
 
 	<repositories>
