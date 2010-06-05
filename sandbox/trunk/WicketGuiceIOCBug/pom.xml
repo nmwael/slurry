@@ -1,24 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.slurry</groupId>
-	<artifactId>guiceIOCBug</artifactId>
+	<artifactId>WicketGuiceIOCBug</artifactId>
 	<packaging>war</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>Wicket Warp Hibernate</name>
-
+	<name>Wicket Warp Guice JPA</name>
 	<repositories>
 		<repository>
-			<url>http://download.java.net/maven/2/</url>
-			<id>java repo</id>
-		</repository>
+			<id>EclipseLink Repo</id>
+			<url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo</url>
+        </repository>
+		<repository>
+			<id>Kune Repo</id>
+			<url>http://kune.ourproject.org/mavenrepo/</url>
+        </repository>
 
-	</repositories>
-
+     </repositories> 
+	
+	
 	<dependencies>
-		<!-- WICKET DEPENDENCIES -->
+		<!--  WICKET DEPENDENCIES -->
 		<dependency>
 			<groupId>org.apache.wicket</groupId>
 			<artifactId>wicket</artifactId>
@@ -68,13 +71,14 @@
 			<artifactId>warp-persist</artifactId>
 			<version>1.0.1</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
 			<version>1.0</version>
 		</dependency>
-
+		
+		
 		<!-- This is required for warp-persist -->
 		<dependency>
 			<groupId>aopalliance</groupId>
@@ -82,28 +86,53 @@
 			<version>1.0</version>
 		</dependency>
 
-		<!-- Hibernate -->
-
+		<!-- JPA -->
+		<!-- Hibernate impl -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate</artifactId>
-			<version>3.2.7.ga</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-annotations</artifactId>
+			<artifactId>hibernate-entitymanager</artifactId>
 			<version>3.4.0.GA</version>
 		</dependency>
-
-
+		
+		<!-- eclipse link impl
+		 <dependency>
+    		<groupId>org.eclipse.persistence</groupId>
+    		<artifactId>eclipselink</artifactId>
+   			<version>1.1.2</version>
+  		</dependency>
+  		<dependency>
+  			<groupId>org.eclipse.persistence</groupId>
+  			<artifactId>javax.persistence</artifactId>
+  			<version>1.1.2</version>
+  		</dependency>
+		 -->
+		 
+		 <!-- OpenJPA impl
+        <dependency>
+            <groupId>org.apache.openjpa</groupId>
+            <artifactId>openjpa</artifactId>
+            <version>1.2.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.4.2</version>
+			<scope>runtime</scope>
+		</dependency>
+-->
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>
 			<artifactId>jetty</artifactId>
 			<version>${jetty.version}</version>
-			<scope>provided</scope>
+			<scope>test</scope>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -179,7 +208,7 @@
 
 	<properties>
 		<slf4j.version>1.5.11</slf4j.version>
-		<wicket.version>1.4.7</wicket.version>
+		<wicket.version>1.4.9</wicket.version>
 		<jetty.version>6.1.22</jetty.version>
 	</properties>
 
