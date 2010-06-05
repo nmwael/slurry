@@ -7,4 +7,6 @@ import org.slurry.data.dataobjects.Event;
  */
 public interface EventDao extends Dao<Event> {
 
+	public abstract Event find(Long id);
+
 }

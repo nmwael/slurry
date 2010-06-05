@@ -6,13 +6,15 @@ import javax.persistence.Query;
 
 import org.slurry.data.dao.interfaces.EventDao;
 import org.slurry.data.dataobjects.Event;
+
 import com.wideplay.warp.persist.Transactional;
 
 /**
  * @author Richard Wilkinson - richard.wilkinson@jweekend.com
  * 
  */
-public class EventDaoJPAImp extends AbstractDaoJPAImpl<Event> implements EventDao {
+public class EventDaoJPAImp extends AbstractDaoJPAImpl<Event> implements
+		EventDao {
 
 	public EventDaoJPAImp() {
 		super(Event.class);
@@ -23,6 +25,13 @@ public class EventDaoJPAImp extends AbstractDaoJPAImpl<Event> implements EventDa
 	public List<Event> findAll() {
 		Query query = em.get().createQuery("select e from Event e");
 		return query.getResultList();
+	}
+
+	@Transactional
+	public Event find(Long id) {
+		Query query = em.get().createQuery(
+				"select e from Event e where e.id =" + id  );
+		return ((Event) query.getSingleResult());
 	}
 
 	@Transactional

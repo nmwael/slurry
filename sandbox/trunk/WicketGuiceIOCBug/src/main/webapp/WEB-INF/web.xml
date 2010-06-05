@@ -7,14 +7,16 @@
 
 	<!-- Warp Filter -->
 	<filter>
-		<filter-name>warpSessionFilter</filter-name>
-		<filter-class>com.wideplay.warp.jpa.SessionPerRequestFilter</filter-class>
+		<filter-name>warpPersistFilter</filter-name>
+		<filter-class>com.wideplay.warp.persist.PersistenceFilter</filter-class>
 	</filter>
 
 	<filter-mapping>
-		<filter-name>warpSessionFilter</filter-name>
+		<filter-name>warpPersistFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
+
+
 	<!-- Warp Filter -->
 	<filter>
 		<filter-name>wicket.WicketWarp</filter-name>
