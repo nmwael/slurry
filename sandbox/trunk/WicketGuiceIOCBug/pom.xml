@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.slurry</groupId>
@@ -11,17 +12,16 @@
 		<repository>
 			<id>EclipseLink Repo</id>
 			<url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo</url>
-        </repository>
+		</repository>
 		<repository>
 			<id>Kune Repo</id>
 			<url>http://kune.ourproject.org/mavenrepo/</url>
-        </repository>
+		</repository>
 
-     </repositories> 
-	
-	
+	</repositories>
+
 	<dependencies>
-		<!--  WICKET DEPENDENCIES -->
+		<!-- WICKET DEPENDENCIES -->
 		<dependency>
 			<groupId>org.apache.wicket</groupId>
 			<artifactId>wicket</artifactId>
@@ -66,19 +66,20 @@
 		</dependency>
 
 		<!-- You will need to install this into your repo manually -->
+		<!-- http://warp-persist.googlecode.com/svn/trunk/warp-persist/dist/warp-persist-2.0-20090214.zip -->
 		<dependency>
-			<groupId>com.wideplay</groupId>
+			<groupId>com.wideplay.warp</groupId>
 			<artifactId>warp-persist</artifactId>
-			<version>1.0.1</version>
+			<version>2.0-20090214</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-			<version>1.0</version>
+			<version>2.0</version>
 		</dependency>
-		
-		
+
+
 		<!-- This is required for warp-persist -->
 		<dependency>
 			<groupId>aopalliance</groupId>
@@ -93,46 +94,24 @@
 			<artifactId>hibernate-entitymanager</artifactId>
 			<version>3.4.0.GA</version>
 		</dependency>
-		
-		<!-- eclipse link impl
-		 <dependency>
-    		<groupId>org.eclipse.persistence</groupId>
-    		<artifactId>eclipselink</artifactId>
-   			<version>1.1.2</version>
-  		</dependency>
-  		<dependency>
-  			<groupId>org.eclipse.persistence</groupId>
-  			<artifactId>javax.persistence</artifactId>
-  			<version>1.1.2</version>
-  		</dependency>
-		 -->
-		 
-		 <!-- OpenJPA impl
-        <dependency>
-            <groupId>org.apache.openjpa</groupId>
-            <artifactId>openjpa</artifactId>
-            <version>1.2.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jcl-over-slf4j</artifactId>
-			<version>1.4.2</version>
-			<scope>runtime</scope>
-		</dependency>
--->
+
+		<!-- eclipse link impl <dependency> <groupId>org.eclipse.persistence</groupId> 
+			<artifactId>eclipselink</artifactId> <version>1.1.2</version> </dependency> 
+			<dependency> <groupId>org.eclipse.persistence</groupId> <artifactId>javax.persistence</artifactId> 
+			<version>1.1.2</version> </dependency> -->
+
+		<!-- OpenJPA impl <dependency> <groupId>org.apache.openjpa</groupId> <artifactId>openjpa</artifactId> 
+			<version>1.2.1</version> <exclusions> <exclusion> <groupId>commons-logging</groupId> 
+			<artifactId>commons-logging</artifactId> </exclusion> </exclusions> </dependency> 
+			<dependency> <groupId>org.slf4j</groupId> <artifactId>jcl-over-slf4j</artifactId> 
+			<version>1.4.2</version> <scope>runtime</scope> </dependency> -->
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>
 			<artifactId>jetty</artifactId>
 			<version>${jetty.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
