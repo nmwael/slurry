@@ -32,6 +32,7 @@ public abstract class AbstractDaoJPAImpl<T extends DomainObject> implements Dao<
 	@Transactional
 	public T load(Serializable id)
 	{
+		em.get().flush();
 		return (T) em.get().find(domainClass, id);
 	}
 	

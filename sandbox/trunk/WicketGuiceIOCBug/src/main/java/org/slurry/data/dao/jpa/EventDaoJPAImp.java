@@ -23,12 +23,14 @@ public class EventDaoJPAImp extends AbstractDaoJPAImpl<Event> implements
 	@SuppressWarnings("unchecked")
 	@Transactional
 	public List<Event> findAll() {
+		em.get().flush();
 		Query query = em.get().createQuery("select e from Event e");
 		return query.getResultList();
 	}
 
 	@Transactional
 	public Event find(Long id) {
+		em.get().flush();
 		Query query = em.get().createQuery(
 				"select e from Event e where e.id =" + id  );
 		return ((Event) query.getSingleResult());
@@ -36,6 +38,7 @@ public class EventDaoJPAImp extends AbstractDaoJPAImpl<Event> implements
 
 	@Transactional
 	public int countAll() {
+		em.get().flush();
 		Query query = em.get().createQuery("select count (e) from Event e");
 		return ((Long) query.getSingleResult()).intValue();
 	}

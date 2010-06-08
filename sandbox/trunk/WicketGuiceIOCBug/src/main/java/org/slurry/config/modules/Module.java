@@ -3,6 +3,8 @@ package org.slurry.config.modules;
 import org.slurry.DataInitialiser;
 import org.slurry.data.dao.interfaces.EventDao;
 import org.slurry.data.dao.jpa.EventDaoJPAImp;
+import org.slurry.pages.EventDetachableModel;
+import org.slurry.pages.EventListDetachableModel;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -44,6 +46,9 @@ public class Module extends AbstractModule {
 		// dao stuff
 		bind(EventDao.class).to(EventDaoJPAImp.class);
 		bindConstant().annotatedWith(JpaUnit.class).to("myFirstJpaUnit");
+		
+		bind(EventDetachableModel.class);
+		bind(EventListDetachableModel.class);
 	}
 
 	@Singleton
