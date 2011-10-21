@@ -95,4 +95,12 @@
 
 
 	</build>
+	
+	<scm>
+		<connection>scm:svn:https://slurry.googlecode.com/svn/cache4guice/trunk/</connection>
+		<developerConnection>scm:svn:https://slurry.googlecode.com/svn/cache4guice/trunk/</developerConnection>
+		<url>http://code.google.com/p/slurry/source/browse/</url>
+	</scm>
+
+	
 </project>
