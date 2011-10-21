@@ -1,5 +1,7 @@
 package org.slurry.cache4guice.aop;
 
+import java.lang.reflect.Method;
+
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
@@ -56,23 +58,30 @@ public class CacheInterceptor implements MethodInterceptor {
 	}
 
 	private void createCache(MethodInvocation invocation) {
-		getCacheManager().addCache(getCacheName(invocation));
+		getCacheManager()
+				.addCache(getCacheNameFromMethodInvocation(invocation));
 	}
 
 	private boolean cacheCreated(MethodInvocation invocation) {
-		return getCacheManager().cacheExists(getCacheName(invocation));
+		return getCacheManager().cacheExists(
+				getCacheNameFromMethodInvocation(invocation));
 	}
 
 	private Cache getCache(MethodInvocation invocation) {
-		return getCacheManager().getCache(getCacheName(invocation));
+		return getCacheManager().getCache(
+				getCacheNameFromMethodInvocation(invocation));
 	}
 
-	private String getCacheName(MethodInvocation invocation) {
+	private String getCacheNameFromMethodInvocation(MethodInvocation invocation) {
 
-		String cacheName = invocation.getMethod().getDeclaringClass()
-				.getCanonicalName()
-				+ " " + invocation.getMethod().toGenericString();
+		return getCacheNameFromMethod(invocation.getMethod());
+	}
+
+	public static String getCacheNameFromMethod(Method method) {
+		String cacheName = method.getDeclaringClass().getCanonicalName() + " "
+				+ method.toGenericString();
 		return cacheName;
+
 	}
 
 	@Inject
