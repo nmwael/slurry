@@ -110,13 +110,13 @@
 			<uniqueVersion>true</uniqueVersion>
 			<id>slurry-release</id>
 			<name>Slurry Release</name>
-			<url>svn:https://slurry.googlecode.com/svn/maven/release</url>
+			<url>javasvn:https://slurry.googlecode.com/svn/maven/release</url>
 			<layout>default</layout>
 		</repository>
 		<snapshotRepository>
 			<id>slurry-snapshot</id>
 			<name>Slurry Snapshot</name>
-			<url>svn:https://slurry.googlecode.com/svn/maven/snapshot</url>
+			<url>javasvn:https://slurry.googlecode.com/svn/maven/snapshot</url>
 			<layout>default</layout>
 			<uniqueVersion>false</uniqueVersion>
 		</snapshotRepository>
