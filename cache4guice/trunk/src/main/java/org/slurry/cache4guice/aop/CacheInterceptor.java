@@ -44,7 +44,7 @@ public class CacheInterceptor implements MethodInterceptor {
 	}
 
 	private String getCacheKey(MethodInvocation invocation) {
-		
+
 		return getCacheKeyGenerator().getCacheKey(invocation);
 	}
 
@@ -68,7 +68,11 @@ public class CacheInterceptor implements MethodInterceptor {
 	}
 
 	private String getCacheName(MethodInvocation invocation) {
-		return invocation.getMethod().toString();
+
+		String cacheName = invocation.getMethod().getDeclaringClass()
+				.getCanonicalName()
+				+ " " + invocation.getMethod().toGenericString();
+		return cacheName;
 	}
 
 	@Inject
