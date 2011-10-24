@@ -90,6 +90,8 @@ public class CacheInterceptor implements MethodInterceptor {
 				UUID uuid = UUID.randomUUID();
 				getUuidMap().put(cacheName, uuid);
 				cacheName = uuid.toString();
+			} else {
+				cacheName = getUuidMap().get(cacheName).toString();
 			}
 
 		}
