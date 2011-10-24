@@ -1,6 +1,9 @@
 package org.slurry.cache4guice.aop;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -16,6 +19,8 @@ public class CacheInterceptor implements MethodInterceptor {
 	private CacheManager cacheManager;
 
 	private CacheKeyGenerator cacheKeyGenerator;
+
+	private static Map<String, UUID> uuidMap = new HashMap<String, UUID>();
 
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		setupCacheIfNecessary(invocation);
@@ -80,6 +85,14 @@ public class CacheInterceptor implements MethodInterceptor {
 	public static String getCacheNameFromMethod(Method method) {
 		String cacheName = method.getDeclaringClass().getCanonicalName() + " "
 				+ method.toGenericString();
+		if (cacheName.length() > 32) {
+			if (!getUuidMap().containsKey(cacheName)) {
+				UUID uuid = UUID.randomUUID();
+				getUuidMap().put(cacheName, uuid);
+				cacheName = uuid.toString();
+			}
+
+		}
 		return cacheName;
 
 	}
@@ -100,6 +113,14 @@ public class CacheInterceptor implements MethodInterceptor {
 
 	public CacheKeyGenerator getCacheKeyGenerator() {
 		return cacheKeyGenerator;
+	}
+
+	public static Map<String, UUID> getUuidMap() {
+		return uuidMap;
+	}
+
+	public static void setUuidMap(Map<String, UUID> uuidMap) {
+		CacheInterceptor.uuidMap = uuidMap;
 	}
 
 }
