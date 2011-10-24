@@ -21,4 +21,21 @@ public class CalculatorImpl implements Calculator {
 		return number + number2;
 	}
 
+	@Cached
+	public BogusClass veryLooooooooooooooooooooooooooooooooongNaaaaaaaammeeeeSoDiskCacheHasProoooooooooooblem(
+			Integer number, Integer number2) throws InterruptedException {
+		Thread.sleep(2000);
+
+		BogusClass bogusClass = new BogusClass();
+		bogusClass.setResult(number + number2);
+		return bogusClass;
+	}
+
+	// 70
+	@Cached
+	public BogusClass nr34567890123456789012345678901234567890123456789012345678901234567890(
+			Integer number, Integer number2) throws InterruptedException {
+		return null;
+	}
+
 }
