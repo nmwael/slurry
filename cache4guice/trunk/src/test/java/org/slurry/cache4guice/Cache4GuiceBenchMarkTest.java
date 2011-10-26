@@ -24,7 +24,7 @@ public class Cache4GuiceBenchMarkTest {
 
 	private Calculator cacheCalculator;
 
-	private Calculator nonCacheCalculator = new CalculatorImpl();
+	private Calculator nonCacheCalculator = new CalculatorImplParent();
 
 	private Cache4GuiceHelper cache4GuiceHelper;
 
@@ -86,7 +86,7 @@ public class Cache4GuiceBenchMarkTest {
 
 		stopwatch = new StopWatch();
 		List<Ehcache> findCaches = getCache4GuiceHelper().findCaches(
-				CalculatorImpl.class);
+				CalculatorImplParent.class);
 
 		for (Ehcache cache : findCaches) {
 			cache.getCacheConfiguration().setTimeToLiveSeconds(1);

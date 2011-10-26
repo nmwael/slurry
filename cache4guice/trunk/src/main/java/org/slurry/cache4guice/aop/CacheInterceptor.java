@@ -1,6 +1,7 @@
 package org.slurry.cache4guice.aop;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import net.sf.ehcache.Element;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.lang.NotImplementedException;
 
 import com.google.inject.Inject;
 
@@ -83,6 +85,13 @@ public class CacheInterceptor implements MethodInterceptor {
 	}
 
 	public static String getCacheNameFromMethod(Method method) {
+		if (Modifier.isPrivate(method.getModifiers())) {
+			throw new NotImplementedException(
+					"Method is private "
+							+ method.toGenericString()
+							+ " only protected public and package private are supported");
+		}
+
 		String cacheName = method.getDeclaringClass().getCanonicalName() + " "
 				+ method.toGenericString();
 		if (cacheName.length() > 32) {

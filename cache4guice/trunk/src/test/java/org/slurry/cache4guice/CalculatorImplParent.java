@@ -2,7 +2,7 @@ package org.slurry.cache4guice;
 
 import org.slurry.cache4guice.annotation.Cached;
 
-public class CalculatorImpl implements Calculator {
+public class CalculatorImplParent implements Calculator {
 
 	@Cached
 	public int calculateSomethingWild(Integer number)

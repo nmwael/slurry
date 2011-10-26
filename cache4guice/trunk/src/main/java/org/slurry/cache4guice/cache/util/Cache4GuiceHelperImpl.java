@@ -73,7 +73,8 @@ public class Cache4GuiceHelperImpl implements Cache4GuiceHelper {
 				cache = getCacheManager().getEhcache(cacheName);
 
 			} else {
-				cache = getCacheManager().addCacheIfAbsent(cacheName);
+				getCacheManager().addCache(cacheName);
+				cache = getCacheManager().getEhcache(cacheName);
 
 			}
 			caches.add(cache);
