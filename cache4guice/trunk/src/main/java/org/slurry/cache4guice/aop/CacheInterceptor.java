@@ -9,6 +9,7 @@ import java.util.UUID;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.Ehcache;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -33,7 +34,7 @@ public class CacheInterceptor implements MethodInterceptor {
 
 	private Object getResultFromCacheOrMethod(MethodInvocation invocation)
 			throws Throwable {
-		Cache cache = getCache(invocation);
+		Ehcache cache = getCache(invocation);
 		String cacheKey = getCacheKey(invocation);
 		Element element = cache.get(cacheKey);
 		if (element != null) {
@@ -44,7 +45,7 @@ public class CacheInterceptor implements MethodInterceptor {
 
 	}
 
-	private Object getResultAndCache(MethodInvocation invocation, Cache cache,
+	private Object getResultAndCache(MethodInvocation invocation, Ehcache cache,
 			String cacheKey) throws Throwable {
 		Object methodResult = invocation.proceed();
 		Element elementResult = new Element(cacheKey, methodResult);
@@ -63,7 +64,10 @@ public class CacheInterceptor implements MethodInterceptor {
 
 		}
 	}
-
+/**
+ * @TODO implement a way to help the user to generate different caches like nonblocking or blocking cache.
+ * @param invocation
+ */
 	private void createCache(MethodInvocation invocation) {
 		getCacheManager()
 				.addCache(getCacheNameFromMethodInvocation(invocation));
@@ -74,9 +78,8 @@ public class CacheInterceptor implements MethodInterceptor {
 				getCacheNameFromMethodInvocation(invocation));
 	}
 
-	private Cache getCache(MethodInvocation invocation) {
-		return getCacheManager().getCache(
-				getCacheNameFromMethodInvocation(invocation));
+	private Ehcache getCache(MethodInvocation invocation) {
+		return getCacheManager().getEhcache(getCacheNameFromMethodInvocation(invocation));
 	}
 
 	private String getCacheNameFromMethodInvocation(MethodInvocation invocation) {

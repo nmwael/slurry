@@ -4,6 +4,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.constructs.blocking.BlockingCache;
 
 import org.apache.commons.lang.time.StopWatch;
 import org.junit.After;
@@ -91,6 +92,43 @@ public class Cache4GuiceBenchMarkTest {
 		for (Ehcache cache : findCaches) {
 			cache.getCacheConfiguration().setTimeToLiveSeconds(1);
 		}
+
+		// wait for cache to expire
+		Thread.sleep(1500);
+
+		stopwatch.start();
+		Assert.assertEquals(2, getCacheCalculator().calculateSomethingWild(2));
+		logger.debug("Done calculating Cached {} ms ", stopwatch.getTime());
+
+	}
+	
+	
+	@Test
+	public void runTimeCacheConfigurationBlockingTest() throws InterruptedException {
+
+		List<Ehcache> findCaches = getCache4GuiceHelper().findCaches(
+				CalculatorImplParent.class);
+		for (Ehcache cache : findCaches) {
+			BlockingCache blockingCache=new BlockingCache(cache);
+			cache.getCacheConfiguration().setTimeToLiveSeconds(1);
+			cache.getCacheManager().replaceCacheWithDecoratedCache(cache, blockingCache);
+		}
+		StopWatch stopwatch = new StopWatch();
+		stopwatch.start();
+		// Got to cache!
+		Assert.assertEquals(2, getCacheCalculator().calculateSomethingWild(2));
+
+		logger.debug("Done calculating Cached Warmup {} ms ",
+				stopwatch.getTime());
+
+		stopwatch = new StopWatch();
+		stopwatch.start();
+		Assert.assertEquals(2, getCacheCalculator().calculateSomethingWild(2));
+
+		logger.debug("Done calculating Cached {} ms ", stopwatch.getTime());
+
+		stopwatch = new StopWatch();
+
 
 		// wait for cache to expire
 		Thread.sleep(1500);

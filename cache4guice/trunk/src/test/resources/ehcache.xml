@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../config/ehcache.xsd">
-	<cache name="org.hibernate.cache.StandardQueryCache"
-		maxElementsInMemory="1000" eternal="false" timeToLiveSeconds="5"
-		overflowToDisk="true">
-		
-		</cache>
-
-	<cache name="org.hibernate.cache.UpdateTimestampsCache"
-		maxElementsInMemory="5000" eternal="true" overflowToDisk="true" />
-		
-		    <defaultCache
+	    <defaultCache
             maxElementsInMemory="10000"
             eternal="false"
             timeToIdleSeconds="120"
@@ -20,7 +11,8 @@
             diskExpiryThreadIntervalSeconds="120"
             memoryStoreEvictionPolicy="LRU"
             >
-            <cacheDecoratorFactory class="net.sf.ehcache.constructs.nonstop.NonStopCacheDecoratorFactory" properties="name=nonstopNoop, timeoutMillis=13000, timeoutBehavior=noop"></cacheDecoratorFactory>
-            
+<!--                <cacheDecoratorFactory class="org.slurry.cache4guice.cache.decoratorFactory.BlockingCacheDecoratorFactory" properties="" /> -->
             </defaultCache>
+            
+           <diskStore path="java.io.tmpdir"/>
 </ehcache>
