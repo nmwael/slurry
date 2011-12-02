@@ -38,14 +38,14 @@
     </licenses>
 
     <scm>
-        <developerConnection>scm:svn:https://slurry.googlecode.com/svn/quartz4guice/trunk</developerConnection>
-        <connection>scm:svn:https://slurry.googlecode.com/svn/quartz4guice/trunk</connection>
+        <developerConnection>scm:javasvn:https://slurry.googlecode.com/svn/quartz4guice/trunk</developerConnection>
+        <connection>scm:javasvn:https://slurry.googlecode.com/svn/quartz4guice/trunk</connection>
         <url>http://code.google.com/p/slurry/source/browse/#svn/quartz4guice/trunk</url>
     </scm>
 
     <issueManagement>
         <system>Google-Code Issue Management</system>
-        <url>http://code.google.com/p/ibaguice/issues/</url>
+        <url>http://code.google.com/p/slurry/issues/</url>
     </issueManagement>
 
     <distributionManagement>
