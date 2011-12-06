@@ -117,7 +117,7 @@
 					<dependency>
 						<groupId>com.google.scm.svnjava</groupId>
 						<artifactId>maven-scm-provider-svnjava</artifactId>
-						<version>1.9</version>
+						<version>1.2.1</version>
 					</dependency>
 				</dependencies>
 			</plugin>
@@ -132,9 +132,9 @@
                     </configuration>
                    <dependencies>
                         <dependency>
-                           <groupId>com.google.code.maven-scm-provider-svnjava</groupId>
+                           <groupId>com.google.scm.svnjava</groupId>
                            <artifactId>maven-scm-provider-svnjava</artifactId>
-                            <version>1.9</version>
+                            <version>1.2.1</version>
                        </dependency>
                     </dependencies>
                </plugin>
