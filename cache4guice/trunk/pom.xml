@@ -4,7 +4,7 @@
 	<groupId>org.slurry</groupId>
 	<artifactId>cache4guice</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.4-SNAPSHOT</version>
+	<version>1.0.6-SNAPSHOT</version>
 	<name>cache4guice</name>
 	<url>http://code.google.com/p/slurry/</url>
 	<parent>
