@@ -6,14 +6,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
 import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slurry.cache4guice.annotation.Cached;
 
 import com.google.inject.Inject;
 
@@ -22,6 +24,10 @@ public class CacheInterceptor implements MethodInterceptor {
 	private CacheManager cacheManager;
 
 	private CacheKeyGenerator cacheKeyGenerator;
+	
+	private static Logger  logger = LoggerFactory
+			.getLogger(CacheInterceptor.class);
+
 
 	private static Map<String, UUID> uuidMap = new HashMap<String, UUID>();
 
@@ -38,15 +44,17 @@ public class CacheInterceptor implements MethodInterceptor {
 		String cacheKey = getCacheKey(invocation);
 		Element element = cache.get(cacheKey);
 		if (element != null) {
+			logger.debug("Cache HIT >"+cache.getName()+"<");
 			return element.getValue();
 		} else {
+			logger.debug("Cache MISS >"+cache.getName()+"<");
 			return getResultAndCache(invocation, cache, cacheKey);
 		}
 
 	}
 
-	private Object getResultAndCache(MethodInvocation invocation, Ehcache cache,
-			String cacheKey) throws Throwable {
+	private Object getResultAndCache(MethodInvocation invocation,
+			Ehcache cache, String cacheKey) throws Throwable {
 		Object methodResult = invocation.proceed();
 		Element elementResult = new Element(cacheKey, methodResult);
 		cache.put(elementResult);
@@ -64,10 +72,12 @@ public class CacheInterceptor implements MethodInterceptor {
 
 		}
 	}
-/**
- * @TODO implement a way to help the user to generate different caches like nonblocking or blocking cache.
- * @param invocation
- */
+
+	/**
+	 * @TODO implement a way to help the user to generate different caches like
+	 *       nonblocking or blocking cache.
+	 * @param invocation
+	 */
 	private void createCache(MethodInvocation invocation) {
 		getCacheManager()
 				.addCache(getCacheNameFromMethodInvocation(invocation));
@@ -79,7 +89,8 @@ public class CacheInterceptor implements MethodInterceptor {
 	}
 
 	private Ehcache getCache(MethodInvocation invocation) {
-		return getCacheManager().getEhcache(getCacheNameFromMethodInvocation(invocation));
+		return getCacheManager().getEhcache(
+				getCacheNameFromMethodInvocation(invocation));
 	}
 
 	private String getCacheNameFromMethodInvocation(MethodInvocation invocation) {
@@ -94,13 +105,21 @@ public class CacheInterceptor implements MethodInterceptor {
 							+ method.toGenericString()
 							+ " only protected public and package private are supported");
 		}
+		String potentialName = method.getAnnotation(Cached.class).name();
+		String cacheName=null;
+		if (potentialName.length() > 0) {
+			cacheName=potentialName;
+			logger.debug("using annotation specified name >"+potentialName+"<");
+		} else {
+			cacheName = method.getDeclaringClass().getCanonicalName()
+					+ " " + method.toGenericString();
+		}
 
-		String cacheName = method.getDeclaringClass().getCanonicalName() + " "
-				+ method.toGenericString();
 		if (cacheName.length() > 32) {
 			if (!getUuidMap().containsKey(cacheName)) {
 				UUID uuid = UUID.randomUUID();
 				getUuidMap().put(cacheName, uuid);
+				logger.debug("mapping "+cacheName+">>>"+uuid.toString());
 				cacheName = uuid.toString();
 			} else {
 				cacheName = getUuidMap().get(cacheName).toString();

@@ -10,5 +10,8 @@ public interface Calculator {
 
 	public BogusClass veryLooooooooooooooooooooooooooooooooongNaaaaaaaammeeeeSoDiskCacheHasProoooooooooooblem(
 			Integer number, Integer number2) throws InterruptedException;
+	
+	public int imNamed(Integer number);
+
 
 }

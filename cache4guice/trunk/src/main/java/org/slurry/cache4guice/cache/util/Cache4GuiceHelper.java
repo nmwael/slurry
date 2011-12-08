@@ -14,4 +14,13 @@ public interface Cache4GuiceHelper {
 	 */
 	public abstract List<Ehcache> findCaches(Class<? extends Object> searchClass);
 
+	
+	
+	/**
+	 * 
+	 * @param name given name, or name derived from method
+	 * @return
+	 */
+	public abstract Ehcache getCache(String name);
+
 }

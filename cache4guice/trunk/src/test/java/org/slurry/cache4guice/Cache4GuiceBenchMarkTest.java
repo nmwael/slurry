@@ -169,6 +169,20 @@ public class Cache4GuiceBenchMarkTest {
 		logger.debug("Done calculating  Non Cached {} ms ", stopwatch.getTime());
 
 	}
+	
+	@Test
+	public void getCacheFromName(){
+
+		Ehcache cache = getCache4GuiceHelper().getCache(Names.cacheNameOne);
+		
+
+		Assert.assertNotNull(cache);
+
+
+
+	}	
+	
+	
 
 	@After
 	public void afterTest() {

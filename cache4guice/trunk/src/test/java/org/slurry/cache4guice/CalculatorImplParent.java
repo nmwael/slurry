@@ -38,4 +38,9 @@ public class CalculatorImplParent implements Calculator {
 		return null;
 	}
 
+	@Cached(name=Names.cacheNameOne)
+	public int imNamed(Integer number){
+		return 0;
+	}
+
 }

@@ -5,7 +5,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -91,5 +94,23 @@ public class Cache4GuiceHelperImpl implements Cache4GuiceHelper {
 	public void setCacheManager(CacheManager cacheManager) {
 		this.cacheManager = cacheManager;
 	}
+
+
+	@Override
+	public Ehcache getCache(String name) {
+		Map<String, UUID> uuidMap = CacheInterceptor.getUuidMap();
+		String uuidCacheName="";
+		for(Entry<String,UUID> entry:uuidMap.entrySet()){
+			if(entry.getKey().compareToIgnoreCase(name)==0){
+				uuidCacheName=entry.getValue().toString();
+			}
+			
+		}
+		Ehcache cache = getCacheManager().getEhcache(uuidCacheName);
+		return cache;
+	}
+
+	
+	
 
 }

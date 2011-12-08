@@ -16,5 +16,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Cached {
+	/**
+	 * Optional custom name, if none specified a name derived from method signature will be created.
+	 * @return
+	 */
+	String name() default "";
+	
 
 }
