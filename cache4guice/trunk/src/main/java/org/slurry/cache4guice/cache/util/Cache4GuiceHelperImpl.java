@@ -99,7 +99,7 @@ public class Cache4GuiceHelperImpl implements Cache4GuiceHelper {
 	@Override
 	public Ehcache getCache(String name) {
 		Map<String, UUID> uuidMap = CacheInterceptor.getUuidMap();
-		String uuidCacheName="";
+		String uuidCacheName=name;
 		for(Entry<String,UUID> entry:uuidMap.entrySet()){
 			if(entry.getKey().compareToIgnoreCase(name)==0){
 				uuidCacheName=entry.getValue().toString();

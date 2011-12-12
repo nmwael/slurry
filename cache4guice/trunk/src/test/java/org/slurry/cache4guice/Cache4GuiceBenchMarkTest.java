@@ -171,11 +171,8 @@ public class Cache4GuiceBenchMarkTest {
 	}
 	
 	@Test
-	public void getCacheFromName(){
-
+	public void getCacheFromName() throws InterruptedException{
 		Ehcache cache = getCache4GuiceHelper().getCache(Names.cacheNameOne);
-		
-
 		Assert.assertNotNull(cache);
 
 

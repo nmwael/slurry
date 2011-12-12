@@ -17,7 +17,8 @@ public interface Cache4GuiceHelper {
 	
 	
 	/**
-	 * 
+	 * Works only if this method containing the cachename have been called or are eagerly loaded.
+	 * Otherwise you will get null 
 	 * @param name given name, or name derived from method
 	 * @return
 	 */
