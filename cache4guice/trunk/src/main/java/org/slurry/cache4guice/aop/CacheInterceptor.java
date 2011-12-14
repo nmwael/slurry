@@ -2,9 +2,11 @@ package org.slurry.cache4guice.aop;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
@@ -24,12 +26,13 @@ public class CacheInterceptor implements MethodInterceptor {
 	private CacheManager cacheManager;
 
 	private CacheKeyGenerator cacheKeyGenerator;
-	
-	private static Logger  logger = LoggerFactory
+
+	private static Logger logger = LoggerFactory
 			.getLogger(CacheInterceptor.class);
 
+	private static Map<String, UUID> uuidMap = new ConcurrentHashMap<String, UUID>();
 
-	private static Map<String, UUID> uuidMap = new HashMap<String, UUID>();
+	private static Map<String, List<String>> categoryMap = new ConcurrentHashMap<String, List<String>>();
 
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		setupCacheIfNecessary(invocation);
@@ -44,10 +47,10 @@ public class CacheInterceptor implements MethodInterceptor {
 		String cacheKey = getCacheKey(invocation);
 		Element element = cache.get(cacheKey);
 		if (element != null) {
-			logger.debug("Cache HIT >"+cache.getName()+"<");
+			logger.debug("Cache HIT >" + cache.getName() + "<");
 			return element.getValue();
 		} else {
-			logger.debug("Cache MISS >"+cache.getName()+"<");
+			logger.debug("Cache MISS >" + cache.getName() + "<");
 			return getResultAndCache(invocation, cache, cacheKey);
 		}
 
@@ -106,29 +109,45 @@ public class CacheInterceptor implements MethodInterceptor {
 							+ " only protected public and package private are supported");
 		}
 		String potentialName = method.getAnnotation(Cached.class).name();
-		String cacheName=null;
+		String potentialCategoryName=method.getAnnotation(Cached.class).category();
+		String cacheName = null;
 		if (potentialName.length() > 0) {
-			cacheName=potentialName;
-			logger.debug("using annotation specified name >"+potentialName+"<");
+			cacheName = potentialName;
+			logger.debug("using annotation specified name >" + potentialName
+					+ "<");
 		} else {
-			cacheName = method.getDeclaringClass().getCanonicalName()
-					+ " " + method.toGenericString();
+			cacheName = method.getDeclaringClass().getCanonicalName() + " "
+					+ method.toGenericString();
 		}
 
 		if (cacheName.length() > 32) {
 			if (!getUuidMap().containsKey(cacheName)) {
 				UUID uuid = UUID.randomUUID();
 				getUuidMap().put(cacheName, uuid);
-				logger.debug("mapping "+cacheName+">>>"+uuid.toString());
+				logger.debug("mapping " + cacheName + ">>>" + uuid.toString());
 				cacheName = uuid.toString();
 			} else {
 				cacheName = getUuidMap().get(cacheName).toString();
 			}
 
 		}
+		if(potentialCategoryName!=null && potentialCategoryName.length()>0){
+			if(getCategoryMap().containsKey(potentialCategoryName)){
+				List<String> list = getCategoryMap().get(potentialCategoryName);
+				if(!list.contains(cacheName)){
+					list.add(cacheName);
+				}
+			}
+			else{
+				List<String> categoryList=new ArrayList<String>();
+				categoryList.add(cacheName);
+				getCategoryMap().put(potentialCategoryName, categoryList);
+			}
+		}
 		return cacheName;
 
 	}
+	
 
 	@Inject
 	public void setCacheManager(CacheManager cacheManager) {
@@ -155,5 +174,15 @@ public class CacheInterceptor implements MethodInterceptor {
 	public static void setUuidMap(Map<String, UUID> uuidMap) {
 		CacheInterceptor.uuidMap = uuidMap;
 	}
+
+	public static Map<String, List<String>> getCategoryMap() {
+		return categoryMap;
+	}
+
+	public static void setCategoryMap(Map<String, List<String>> categoryMap) {
+		CacheInterceptor.categoryMap = categoryMap;
+	}
+
+	
 
 }

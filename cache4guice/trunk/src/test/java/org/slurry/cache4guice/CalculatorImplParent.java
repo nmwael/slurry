@@ -21,7 +21,7 @@ public class CalculatorImplParent implements Calculator {
 		return number + number2;
 	}
 
-	@Cached
+	@Cached(category=Names.cacheCategoryA)
 	public BogusClass veryLooooooooooooooooooooooooooooooooongNaaaaaaaammeeeeSoDiskCacheHasProoooooooooooblem(
 			Integer number, Integer number2) throws InterruptedException {
 		Thread.sleep(2000);
@@ -38,7 +38,7 @@ public class CalculatorImplParent implements Calculator {
 		return null;
 	}
 
-	@Cached(name=Names.cacheNameOne)
+	@Cached(name=Names.cacheNameOne,category=Names.cacheCategoryA)
 	public int imNamed(Integer number){
 		return 0;
 	}

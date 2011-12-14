@@ -2,6 +2,11 @@ package org.slurry.cache4guice.cache.util;
 
 import java.util.List;
 
+import javax.inject.Singleton;
+
+import com.google.inject.Guice;
+import com.google.inject.Scope;
+
 import net.sf.ehcache.Ehcache;
 
 public interface Cache4GuiceHelper {
@@ -12,16 +17,28 @@ public interface Cache4GuiceHelper {
 	 * @param searchClass
 	 * @return
 	 */
-	public abstract List<Ehcache> findCaches(Class<? extends Object> searchClass);
+	public List<Ehcache> findCaches(Class<? extends Object> searchClass);
 
 	
 	
 	/**
 	 * Works only if this method containing the cachename have been called or are eagerly loaded.
 	 * Otherwise you will get null 
+	 * @see com.google.inject.Singleton
 	 * @param name given name, or name derived from method
-	 * @return
+	 * @return net.sf.ehcache.Ehcache or null
 	 */
-	public abstract Ehcache getCache(String name);
+	public Ehcache getCache(String name);
+
+	
+	/**
+	 * Works only if the methods adherent to this category have been called or are eagerly loaded.
+	 * Otherwise you will get no caches
+	 * @see com.google.inject.Singleton 
+	 * @param name given name, or name derived from method
+	 * @return List of net.sf.ehcache.Ehcache
+	 */
+	public List<Ehcache> getCaches(String category);
+
 
 }

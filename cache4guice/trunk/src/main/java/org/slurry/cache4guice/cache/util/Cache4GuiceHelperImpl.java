@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -108,6 +109,23 @@ public class Cache4GuiceHelperImpl implements Cache4GuiceHelper {
 		}
 		Ehcache cache = getCacheManager().getEhcache(uuidCacheName);
 		return cache;
+	}
+
+	@Override
+	public List<Ehcache> getCaches(String category) {
+		Map<String, List<String>> categoryMap = CacheInterceptor.getCategoryMap();
+		List<String> list = categoryMap.get(category);
+		if(list==null)
+		{
+			return Collections.EMPTY_LIST;
+		}else{
+			List<Ehcache> ehcachesList=new ArrayList<Ehcache>();
+			for(String cacheKey:list){
+				ehcachesList.add(getCache(cacheKey));
+			}
+			return ehcachesList;
+		}
+		
 	}
 
 	

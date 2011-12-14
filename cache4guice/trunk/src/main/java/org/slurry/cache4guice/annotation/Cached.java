@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Enumeration;
 
 /**
  * For this to work Methods must be public, package-private or protected Methods
@@ -21,6 +22,13 @@ public @interface Cached {
 	 * @return
 	 */
 	String name() default "";
+	
+	/**
+	 * Optional category name
+	 * @see org.slurry.cache4guice.cache.util.getCaches(String category)
+	 * @return
+	 */
+	String category() default "";
 	
 
 }
