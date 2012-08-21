@@ -106,6 +106,7 @@ public class CacheInterceptor implements MethodInterceptor {
 			final Ehcache rawCache = getCacheManager().getEhcache(
 					cacheNameFromMethodInvocation);
 			rawCache.getCacheConfiguration().setEternal(true);
+			rawCache.getCacheConfiguration().setDiskPersistent(false);
 			CacheEntryFactory cacheEntryFactory = new CacheEntryFactory() {
 
 

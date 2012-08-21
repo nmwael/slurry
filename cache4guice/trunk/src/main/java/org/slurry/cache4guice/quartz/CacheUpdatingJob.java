@@ -24,7 +24,6 @@ public class CacheUpdatingJob implements Job {
 	public void execute(JobExecutionContext context)
 			throws JobExecutionException {
 		String cacheName = context.getMergedJobDataMap().getString(selfPopulatingCacheKey);
-		getCacheManager().cacheExists(cacheName);
 		Ehcache cache = getCacheManager().getEhcache(cacheName);
 		SelfPopulatingCache selfPopulatingCache=(SelfPopulatingCache)  cache;
 		selfPopulatingCache.refresh();
