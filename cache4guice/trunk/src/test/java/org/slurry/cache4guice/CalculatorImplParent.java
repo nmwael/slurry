@@ -1,5 +1,7 @@
 package org.slurry.cache4guice;
 
+import java.util.Random;
+
 import org.slurry.cache4guice.annotation.Cached;
 
 public class CalculatorImplParent implements Calculator {
@@ -41,6 +43,13 @@ public class CalculatorImplParent implements Calculator {
 	@Cached(name=Names.cacheNameOne,category=Names.cacheCategoryA)
 	public int imNamed(Integer number){
 		return 0;
+	}
+static int add=0;
+	@Cached(SelfPopulatingScheduledCache=true,refreshTime=1500)
+	public int serveStaleAndRefreshedData(Integer number1, Integer number2) {
+		add+=number1+number2;
+		add++;
+		return add;
 	}
 
 }

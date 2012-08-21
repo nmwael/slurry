@@ -2,6 +2,7 @@ package org.slurry.cache4guice.module;
 
 import net.sf.ehcache.CacheManager;
 
+import org.nnsoft.guice.guartz.QuartzModule;
 import org.slurry.cache4guice.annotation.Cached;
 import org.slurry.cache4guice.aop.CacheInterceptor;
 import org.slurry.cache4guice.aop.CacheKeyGenerator;
@@ -19,10 +20,17 @@ public class CacheModule extends AbstractModule {
 		bind(CacheKeyGenerator.class).to(getCacheKeyGeneratorClass());
 		CacheInterceptor cacheInterceptor = new CacheInterceptor();
 		requestInjection(cacheInterceptor);
+		requestStaticInjection(CacheInterceptor.class);
 		bindInterceptor(Matchers.any(), Matchers.annotatedWith(Cached.class),
 				cacheInterceptor);
 		bind(Cache4GuiceHelper.class).to(Cache4GuiceHelperImpl.class);
+		install(new QuartzModule(){@Override
+		protected void schedule() {
+			
+		}});
+		
 	}
+	
 
 	protected Class getCacheKeyGeneratorClass() {
 

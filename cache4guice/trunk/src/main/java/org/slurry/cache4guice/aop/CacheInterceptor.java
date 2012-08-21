@@ -1,5 +1,9 @@
 package org.slurry.cache4guice.aop;
 
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -11,20 +15,27 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.constructs.blocking.CacheEntryFactory;
+import net.sf.ehcache.constructs.blocking.SelfPopulatingCache;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang.NotImplementedException;
+import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slurry.cache4guice.annotation.Cached;
+import org.slurry.cache4guice.quartz.CacheUpdatingJob;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 public class CacheInterceptor implements MethodInterceptor {
 
 	private CacheManager cacheManager;
-
 	private CacheKeyGenerator cacheKeyGenerator;
 
 	private static Logger logger = LoggerFactory
@@ -33,6 +44,8 @@ public class CacheInterceptor implements MethodInterceptor {
 	private static Map<String, UUID> uuidMap = new ConcurrentHashMap<String, UUID>();
 
 	private static Map<String, List<String>> categoryMap = new ConcurrentHashMap<String, List<String>>();
+
+	private static Injector injector;
 
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		setupCacheIfNecessary(invocation);
@@ -81,9 +94,81 @@ public class CacheInterceptor implements MethodInterceptor {
 	 *       nonblocking or blocking cache.
 	 * @param invocation
 	 */
-	private void createCache(MethodInvocation invocation) {
-		getCacheManager()
-				.addCache(getCacheNameFromMethodInvocation(invocation));
+	private void createCache(final MethodInvocation invocation) {
+
+		Boolean selfPopulatingScheduledCache = invocation.getMethod()
+				.getAnnotation(Cached.class).SelfPopulatingScheduledCache();
+		if (selfPopulatingScheduledCache) {
+			Long refresh = invocation.getMethod().getAnnotation(Cached.class)
+					.refreshTime();
+			final String cacheNameFromMethodInvocation = getCacheNameFromMethodInvocation(invocation);
+			getCacheManager().addCache(cacheNameFromMethodInvocation);
+			final Ehcache rawCache = getCacheManager().getEhcache(
+					cacheNameFromMethodInvocation);
+			rawCache.getCacheConfiguration().setEternal(true);
+			CacheEntryFactory cacheEntryFactory = new CacheEntryFactory() {
+
+
+
+				@Override
+				public Object createEntry(Object key) throws Exception {
+					logger.debug("refreshing " + key.toString());
+					 MethodInvocation invocationDebug = invocation;
+					 Class<? extends Object> executingClass = invocationDebug.getThis().getClass();
+					 
+					Object result = null;
+					try {
+						Object instance = getInjector().getInstance(executingClass);
+						Method method = invocation.getMethod();
+						Method methodExecute = instance.getClass().getMethod(method.getName(), method.getParameterTypes());
+						
+						
+						result = methodExecute.invoke(instance, invocation.getArguments());
+						logger.debug("result", result);
+						
+					} catch (Throwable e) {
+						logger.error("critical", e);
+						
+					}
+					return result;
+				}
+			};
+			SelfPopulatingCache selfPopulatingCache = new SelfPopulatingCache(
+					rawCache, cacheEntryFactory);
+			getCacheManager().replaceCacheWithDecoratedCache(rawCache,
+					selfPopulatingCache);
+
+			String classAndMethod = invocation.getMethod().getDeclaringClass()
+					.getCanonicalName()
+					+ invocation.getMethod().toString();
+			String packageString = invocation.getMethod().getDeclaringClass()
+					.getPackage().toString();
+
+			JobDetail cacheUpdatingJob = newJob(CacheUpdatingJob.class)
+					.withIdentity(classAndMethod + "_Updatejob", packageString)
+					.build();
+			Trigger trigger = newTrigger()
+					.withIdentity(classAndMethod + "_Trigger", packageString)
+					.withSchedule(
+							simpleSchedule()
+									.withIntervalInMilliseconds(refresh)
+									.repeatForever()).build();
+			trigger.getJobDataMap().put(
+					CacheUpdatingJob.selfPopulatingCacheKey,
+					cacheNameFromMethodInvocation);
+
+			try {
+				StdSchedulerFactory.getDefaultScheduler().scheduleJob(
+						cacheUpdatingJob, trigger);
+			} catch (SchedulerException e) {
+				e.printStackTrace();
+			}
+
+		} else {
+			getCacheManager().addCache(
+					getCacheNameFromMethodInvocation(invocation));
+		}
+
 	}
 
 	private boolean cacheCreated(MethodInvocation invocation) {
@@ -109,8 +194,10 @@ public class CacheInterceptor implements MethodInterceptor {
 							+ " only protected public and package private are supported");
 		}
 		String potentialName = method.getAnnotation(Cached.class).name();
-		String potentialCategoryName=method.getAnnotation(Cached.class).category();
+		String potentialCategoryName = method.getAnnotation(Cached.class)
+				.category();
 		String cacheName = null;
+
 		if (potentialName.length() > 0) {
 			cacheName = potentialName;
 			logger.debug("using annotation specified name >" + potentialName
@@ -131,15 +218,14 @@ public class CacheInterceptor implements MethodInterceptor {
 			}
 
 		}
-		if(potentialCategoryName!=null && potentialCategoryName.length()>0){
-			if(getCategoryMap().containsKey(potentialCategoryName)){
+		if (potentialCategoryName != null && potentialCategoryName.length() > 0) {
+			if (getCategoryMap().containsKey(potentialCategoryName)) {
 				List<String> list = getCategoryMap().get(potentialCategoryName);
-				if(!list.contains(cacheName)){
+				if (!list.contains(cacheName)) {
 					list.add(cacheName);
 				}
-			}
-			else{
-				List<String> categoryList=new ArrayList<String>();
+			} else {
+				List<String> categoryList = new ArrayList<String>();
 				categoryList.add(cacheName);
 				getCategoryMap().put(potentialCategoryName, categoryList);
 			}
@@ -147,7 +233,6 @@ public class CacheInterceptor implements MethodInterceptor {
 		return cacheName;
 
 	}
-	
 
 	@Inject
 	public void setCacheManager(CacheManager cacheManager) {
@@ -183,6 +268,13 @@ public class CacheInterceptor implements MethodInterceptor {
 		CacheInterceptor.categoryMap = categoryMap;
 	}
 
-	
+	public Injector getInjector() {
+		return CacheInterceptor.injector;
+	}
+
+	@Inject
+	public static void setInjector(Injector injector) {
+		CacheInterceptor.injector = injector;
+	}
 
 }

@@ -4,7 +4,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Enumeration;
 
 /**
  * For this to work Methods must be public, package-private or protected Methods
@@ -29,6 +28,18 @@ public @interface Cached {
 	 * @return
 	 */
 	String category() default "";
+	
+	/**
+	 * Optional should the cache self update
+	 **/
+	boolean SelfPopulatingScheduledCache() default false;
+	
+	/**
+	 * Used together with SelfPopulatingScheduledCache to specify the time between updates
+	 * specified in milliseconds
+	 * @return
+	 */
+	long refreshTime() default 120;
 	
 
 }

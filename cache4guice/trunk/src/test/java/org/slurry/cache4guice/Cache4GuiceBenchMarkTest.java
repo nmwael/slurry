@@ -36,7 +36,7 @@ public class Cache4GuiceBenchMarkTest {
 
 		logger = LoggerFactory.getLogger(Cache4GuiceBenchMarkTest.class);
 
-		injector = Guice.createInjector(new CacheModule(), new GuiceModule());
+		injector = Guice.createInjector(new GuiceModule(),new CacheModule());
 
 		injector.injectMembers(this);
 
@@ -138,6 +138,19 @@ public class Cache4GuiceBenchMarkTest {
 		logger.debug("Done calculating Cached {} ms ", stopwatch.getTime());
 
 	}
+	
+	@Test
+	public void SelfPopulatingScheduledCacheTest() throws InterruptedException{
+		Thread.sleep(1000);
+		int result=getCacheCalculator().serveStaleAndRefreshedData(1, 1);
+		Thread.sleep(100);
+		int resultAfterSleep=getCacheCalculator().serveStaleAndRefreshedData(1, 1);
+		Assert.assertEquals("Should be stale",result, resultAfterSleep);
+		Thread.sleep(2000);
+		resultAfterSleep=getCacheCalculator().serveStaleAndRefreshedData(1, 1);
+		Assert.assertTrue("Should be updated",result!=resultAfterSleep);
+		
+	}
 
 	@Test
 	public void checkingCacheCollision() throws InterruptedException {
@@ -187,7 +200,8 @@ public class Cache4GuiceBenchMarkTest {
 
 
 
-	}		
+	}
+	
 	
 
 	@After

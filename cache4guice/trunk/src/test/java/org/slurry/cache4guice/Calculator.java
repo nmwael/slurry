@@ -12,6 +12,8 @@ public interface Calculator {
 			Integer number, Integer number2) throws InterruptedException;
 	
 	public int imNamed(Integer number);
+	
+	public int serveStaleAndRefreshedData(Integer number1,Integer number2);
 
 
 }
