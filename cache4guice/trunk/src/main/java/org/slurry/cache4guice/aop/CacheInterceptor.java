@@ -105,8 +105,11 @@ public class CacheInterceptor implements MethodInterceptor {
 			getCacheManager().addCache(cacheNameFromMethodInvocation);
 			final Ehcache rawCache = getCacheManager().getEhcache(
 					cacheNameFromMethodInvocation);
+			rawCache.getCacheConfiguration().setTimeToLiveSeconds(0);
+			rawCache.getCacheConfiguration().setTimeToIdleSeconds(0);
 			rawCache.getCacheConfiguration().setEternal(true);
-			rawCache.getCacheConfiguration().setDiskPersistent(false);
+			//Problems with cache persistant from jvm to jvm
+			rawCache.getCacheConfiguration().diskPersistent(false);
 			CacheEntryFactory cacheEntryFactory = new CacheEntryFactory() {
 
 
