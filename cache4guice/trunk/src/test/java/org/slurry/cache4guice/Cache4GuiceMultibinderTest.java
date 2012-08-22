@@ -59,8 +59,10 @@ public class Cache4GuiceMultibinderTest {
 	
 	@Test
 	public void SlowSelfPopulatingScheduledCacheTest() throws InterruptedException{
-		Integer result=getCacheCalculator().sloowOperation(1);
-		Assert.assertNull(result);
+		Integer result1=getCacheCalculator().sloowOperation(1);
+		Integer result2=getCacheCalculator().sloowOperation(1);
+		Assert.assertEquals(result1,result2);
+		
 		
 	}
 	

@@ -140,19 +140,6 @@ public class Cache4GuiceBenchMarkTest {
 	}
 	
 	@Test
-	public void SelfPopulatingScheduledCacheTest() throws InterruptedException{
-		Thread.sleep(1000);
-		int result=getCacheCalculator().serveStaleAndRefreshedData(1, 1);
-		Thread.sleep(100);
-		int resultAfterSleep=getCacheCalculator().serveStaleAndRefreshedData(1, 1);
-		Assert.assertEquals("Should be stale",result, resultAfterSleep);
-		Thread.sleep(2000);
-		resultAfterSleep=getCacheCalculator().serveStaleAndRefreshedData(1, 1);
-		Assert.assertTrue("Should be updated",result!=resultAfterSleep);
-		
-	}
-
-	@Test
 	public void checkingCacheCollision() throws InterruptedException {
 
 		minimalTest();

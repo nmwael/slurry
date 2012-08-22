@@ -1,10 +1,13 @@
 package org.slurry.cache4guice;
 
-import java.util.Random;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slurry.cache4guice.annotation.Cached;
 
 public class CalculatorImplParent implements Calculator {
+	
+	
+	private Logger logger = LoggerFactory.getLogger(CalculatorImplParent.class);
 
 	@Cached
 	public int calculateSomethingWild(Integer number)
@@ -52,17 +55,20 @@ static int add=0;
 		return add;
 	}
 
-	@Cached(SelfPopulatingScheduledCache=true,refreshTime=500)
+	@Cached(SelfPopulatingScheduledCache=true,refreshTime=1500)
 	public Integer sloowOperation(Integer number) {
 		try {
-			Thread.sleep(600);
+			logger.debug("begin sleep");
+			Thread.sleep(10000);
+			add+=number;
+			add++;
+			logger.warn("result>"+add+"<");
+			return add;
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		add+=number;
-		add++;
-		return add;
+		return null;
 	}
 
 }
