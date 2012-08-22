@@ -37,6 +37,7 @@ public @interface Cached {
 	/**
 	 * Used together with SelfPopulatingScheduledCache to specify the time between updates
 	 * specified in milliseconds
+	 * Will Have a grace time of 20 miliseconds used to detecting timeout
 	 * @return
 	 */
 	long refreshTime() default 120;

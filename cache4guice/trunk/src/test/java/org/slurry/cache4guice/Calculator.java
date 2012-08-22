@@ -13,6 +13,8 @@ public interface Calculator {
 	
 	public int imNamed(Integer number);
 	
+	public Integer sloowOperation(Integer number);
+	
 	public int serveStaleAndRefreshedData(Integer number1,Integer number2);
 
 

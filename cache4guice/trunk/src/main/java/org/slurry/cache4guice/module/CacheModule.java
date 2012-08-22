@@ -9,6 +9,7 @@ import org.slurry.cache4guice.aop.CacheKeyGenerator;
 import org.slurry.cache4guice.cache.StringBasedKeyGenerator;
 import org.slurry.cache4guice.cache.util.Cache4GuiceHelper;
 import org.slurry.cache4guice.cache.util.Cache4GuiceHelperImpl;
+import org.slurry.cache4guice.cache.util.CacheEntryTimedFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.matcher.Matchers;
@@ -20,7 +21,8 @@ public class CacheModule extends AbstractModule {
 		bind(CacheKeyGenerator.class).to(getCacheKeyGeneratorClass());
 		CacheInterceptor cacheInterceptor = new CacheInterceptor();
 		requestInjection(cacheInterceptor);
-		requestStaticInjection(CacheInterceptor.class);
+		requestStaticInjection(CacheInterceptor.class,CacheEntryTimedFactory.class);
+		
 		bindInterceptor(Matchers.any(), Matchers.annotatedWith(Cached.class),
 				cacheInterceptor);
 		bind(Cache4GuiceHelper.class).to(Cache4GuiceHelperImpl.class);

@@ -28,6 +28,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slurry.cache4guice.annotation.Cached;
+import org.slurry.cache4guice.cache.util.CacheEntryTimedFactory;
 import org.slurry.cache4guice.quartz.CacheUpdatingJob;
 
 import com.google.inject.Inject;
@@ -110,34 +111,9 @@ public class CacheInterceptor implements MethodInterceptor {
 			rawCache.getCacheConfiguration().setEternal(true);
 			//Problems with cache persistant from jvm to jvm
 			rawCache.getCacheConfiguration().diskPersistent(false);
-			CacheEntryFactory cacheEntryFactory = new CacheEntryFactory() {
-
-
-
-				@Override
-				public Object createEntry(Object key) throws Exception {
-					logger.debug("refreshing " + key.toString());
-					 MethodInvocation invocationDebug = invocation;
-					 Class<? extends Object> executingClass = invocationDebug.getThis().getClass();
-					 
-					Object result = null;
-					try {
-						Object instance = getInjector().getInstance(executingClass);
-						Method method = invocation.getMethod();
-						Method methodExecute = instance.getClass().getMethod(method.getName(), method.getParameterTypes());
-						
-						
-						result = methodExecute.invoke(instance, invocation.getArguments());
-						logger.debug("result", result);
-						
-					} catch (Throwable e) {
-						logger.error("critical", e);
-						
-					}
-					return result;
-				}
-			};
-			SelfPopulatingCache selfPopulatingCache = new SelfPopulatingCache(
+			CacheEntryFactory cacheEntryFactory = new CacheEntryTimedFactory(invocation,refresh);
+					
+					SelfPopulatingCache selfPopulatingCache = new SelfPopulatingCache(
 					rawCache, cacheEntryFactory);
 			getCacheManager().replaceCacheWithDecoratedCache(rawCache,
 					selfPopulatingCache);
@@ -151,11 +127,12 @@ public class CacheInterceptor implements MethodInterceptor {
 			JobDetail cacheUpdatingJob = newJob(CacheUpdatingJob.class)
 					.withIdentity(classAndMethod + "_Updatejob", packageString)
 					.build();
+			
 			Trigger trigger = newTrigger()
 					.withIdentity(classAndMethod + "_Trigger", packageString)
 					.withSchedule(
 							simpleSchedule()
-									.withIntervalInMilliseconds(refresh)
+									.withIntervalInMilliseconds(refresh+20)
 									.repeatForever()).build();
 			trigger.getJobDataMap().put(
 					CacheUpdatingJob.selfPopulatingCacheKey,
@@ -165,7 +142,7 @@ public class CacheInterceptor implements MethodInterceptor {
 				StdSchedulerFactory.getDefaultScheduler().scheduleJob(
 						cacheUpdatingJob, trigger);
 			} catch (SchedulerException e) {
-				e.printStackTrace();
+				logger.error("unable to schedule",e);
 			}
 
 		} else {
@@ -176,8 +153,9 @@ public class CacheInterceptor implements MethodInterceptor {
 	}
 
 	private boolean cacheCreated(MethodInvocation invocation) {
+		String cacheNameFromMethodInvocation = getCacheNameFromMethodInvocation(invocation);
 		return getCacheManager().cacheExists(
-				getCacheNameFromMethodInvocation(invocation));
+				cacheNameFromMethodInvocation);
 	}
 
 	private Ehcache getCache(MethodInvocation invocation) {

@@ -52,4 +52,17 @@ static int add=0;
 		return add;
 	}
 
+	@Cached(SelfPopulatingScheduledCache=true,refreshTime=500)
+	public Integer sloowOperation(Integer number) {
+		try {
+			Thread.sleep(600);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		add+=number;
+		add++;
+		return add;
+	}
+
 }
