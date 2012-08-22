@@ -20,7 +20,7 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.name.Named;
 
-public class Cache4GuiceMultibinderTest {
+public class Cache4GuiceSlowOperationTest {
 
 	private Injector injector;
 
@@ -35,7 +35,7 @@ public class Cache4GuiceMultibinderTest {
 	@Before
 	public void beforeTest() {
 
-		logger = LoggerFactory.getLogger(Cache4GuiceMultibinderTest.class);
+		logger = LoggerFactory.getLogger(Cache4GuiceSlowOperationTest.class);
 
 		injector = Guice.createInjector(new GuiceMultibinderModule(),new CacheModule());
 
@@ -44,24 +44,18 @@ public class Cache4GuiceMultibinderTest {
 	}
 
 	
-	
-	@Test
-	public void SelfPopulatingScheduledCacheTest() throws InterruptedException{
-		int result=getCacheCalculator().serveStaleAndRefreshedData(1, 1);
-		int resultAfterSleep=getCacheCalculator().serveStaleAndRefreshedData(1, 1);
-		Assert.assertEquals("Should be stale",result, resultAfterSleep);
-		Thread.sleep(2000);
-		resultAfterSleep=getCacheCalculator().serveStaleAndRefreshedData(1, 1);
-		Assert.assertTrue("Should be updated",result!=resultAfterSleep);
-		
-	}
-
-	
 	@Test
 	public void SlowSelfPopulatingScheduledCacheTest() throws InterruptedException{
 		Integer result1=getCacheCalculator().sloowOperation(1);
+		Assert.assertNull(result1);
 		Integer result2=getCacheCalculator().sloowOperation(1);
 		Assert.assertEquals(result1,result2);
+		Assert.assertEquals(0,(int)getCacheCalculator().getSloowOperationCounter());
+		Thread.sleep(2000);
+		Integer result3=getCacheCalculator().sloowOperation(1);			
+		Assert.assertEquals(0,(int)getCacheCalculator().getSloowOperationCounter());
+		Assert.assertEquals(result2, result3);
+		
 		
 		
 	}

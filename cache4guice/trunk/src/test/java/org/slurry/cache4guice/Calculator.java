@@ -15,6 +15,8 @@ public interface Calculator {
 	
 	public Integer sloowOperation(Integer number);
 	
+	public Integer getSloowOperationCounter();
+	
 	public int serveStaleAndRefreshedData(Integer number1,Integer number2);
 
 

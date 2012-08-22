@@ -55,20 +55,28 @@ static int add=0;
 		return add;
 	}
 
+	private int sloowOperationCounter=0;
+	
 	@Cached(SelfPopulatingScheduledCache=true,refreshTime=1500)
 	public Integer sloowOperation(Integer number) {
+		logger.debug("was called +>"+sloowOperationCounter+"<");
 		try {
 			logger.debug("begin sleep");
 			Thread.sleep(10000);
-			add+=number;
-			add++;
-			logger.warn("result>"+add+"<");
-			return add;
+			sloowOperationCounter++;
+			logger.warn("result>"+sloowOperationCounter+"<");
+			return sloowOperationCounter;
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	@Override
+	public Integer getSloowOperationCounter() {
+		
+		return sloowOperationCounter;
 	}
 
 }
