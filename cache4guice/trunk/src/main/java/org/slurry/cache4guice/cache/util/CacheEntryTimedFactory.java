@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import net.sf.ehcache.constructs.blocking.CacheEntryFactory;
+import net.sf.ehcache.constructs.blocking.UpdatingCacheEntryFactory;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ public class CacheEntryTimedFactory implements CacheEntryFactory {
 
 	
 	private static Logger logger = LoggerFactory
-			.getLogger(CacheInterceptor.class);
+			.getLogger(CacheEntryTimedFactory.class);
 	private static Injector injector;
 	private MethodInvocation invocation;
 	private final Long refreshTime;
@@ -37,7 +38,7 @@ public class CacheEntryTimedFactory implements CacheEntryFactory {
 		this.refreshTime = refreshTime;
 		this.setInvocation(invocation);
 	}
-
+	
 
 	@Override
 	public Object createEntry(Object key) throws Exception {
@@ -54,23 +55,35 @@ public class CacheEntryTimedFactory implements CacheEntryFactory {
 			ExecutorService executor = Executors.newCachedThreadPool();
 			Callable<Object> task = new Callable<Object>() {
 			   public Object call() {
+				 Object result=null;
 			      try {
-					return methodExecute.invoke(instance, getInvocation().getArguments());
+			    	  if(logger.isDebugEnabled()){
+			    		  Object[] arguments = getInvocation().getArguments();
+			    		  String arguementsString="";
+			    		  for(Object object:arguments){
+			    			  arguementsString+=" "+object.toString();
+			    		  }
+			    		  
+			    		  
+			    		  logger.debug("arguments >"+getInvocation().getArguments().toString()+"<");
+			    	  }
+			    	  result= methodExecute.invoke(instance, getInvocation().getArguments());
 				} catch (Exception e) {
 					logger.error("critical",e);
+					
 				}
-			      return null;
+			      return result;
 			   }
 			};
 			Future<Object> future = executor.submit(task);
 			try {
-			   result = future.get(getRefreshTime(), TimeUnit.MILLISECONDS); 
+			   result = future.get(getRefreshTime()+20, TimeUnit.MILLISECONDS); 
 			} catch (TimeoutException ex) {
 				logger.warn("timed out aborting", ex);
 			} catch (InterruptedException e) {
-				logger.warn("interupted", e);
+				logger.error("interupted", e);
 			} catch (ExecutionException e) {
-				logger.warn("execution failed", e);
+				logger.error("execution failed", e);
 			}
 			
 			
@@ -108,6 +121,7 @@ public class CacheEntryTimedFactory implements CacheEntryFactory {
 	public Long getRefreshTime() {
 		return refreshTime;
 	}
+
 
 	
 

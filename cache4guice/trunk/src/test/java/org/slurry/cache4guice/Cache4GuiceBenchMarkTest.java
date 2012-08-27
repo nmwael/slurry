@@ -111,6 +111,7 @@ public class Cache4GuiceBenchMarkTest {
 		for (Ehcache cache : findCaches) {
 			BlockingCache blockingCache=new BlockingCache(cache);
 			cache.getCacheConfiguration().setTimeToLiveSeconds(1);
+			Boolean test=cache.equals(blockingCache);
 			cache.getCacheManager().replaceCacheWithDecoratedCache(cache, blockingCache);
 		}
 		StopWatch stopwatch = new StopWatch();
