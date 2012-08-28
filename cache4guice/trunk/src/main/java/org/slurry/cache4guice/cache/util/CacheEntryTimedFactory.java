@@ -80,10 +80,13 @@ public class CacheEntryTimedFactory implements CacheEntryFactory {
 			   result = future.get(getRefreshTime()+20, TimeUnit.MILLISECONDS); 
 			} catch (TimeoutException ex) {
 				logger.warn("timed out aborting", ex);
+				throw ex;
 			} catch (InterruptedException e) {
 				logger.error("interupted", e);
+				throw e;
 			} catch (ExecutionException e) {
 				logger.error("execution failed", e);
+				throw e;
 			}
 			
 			if(logger.isDebugEnabled()) {
