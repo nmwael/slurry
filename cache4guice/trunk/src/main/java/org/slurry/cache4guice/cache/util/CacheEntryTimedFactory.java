@@ -90,8 +90,9 @@ public class CacheEntryTimedFactory implements CacheEntryFactory {
 				logger.debug("result >"+ result.toString()+"<");
 			}
 			
-		} catch (Throwable e) {
+		} catch (RuntimeException e) {
 			logger.error("critical", e);
+			throw e;
 			
 		}
 		return result;
