@@ -5,9 +5,9 @@
 
 cache4guice is a simple annotation based cache integration for http://ehcache.org/ .
 
-= NEWS =
- Major new feature
-  *SelfPopulatingScheduledCache*
+= NEWS 30-08-2012 =
+== Major new feature ==
+*SelfPopulatingScheduledCache*
   A cache that gets updated via a quartz scheduled task. Internally it uses a eternal ehcache which gets refreshed from the quartz job.
 
 
