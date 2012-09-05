@@ -28,6 +28,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slurry.cache4guice.annotation.Cached;
+import org.slurry.cache4guice.annotation.SpecialConfig;
 import org.slurry.cache4guice.cache.util.CacheEntryTimedFactory;
 import org.slurry.cache4guice.quartz.CacheUpdatingJob;
 
@@ -43,6 +44,8 @@ public class CacheInterceptor implements MethodInterceptor {
 			.getLogger(CacheInterceptor.class);
 
 	private static Map<String, UUID> uuidMap = new ConcurrentHashMap<String, UUID>();
+
+	private static Map<String, String> cacheConfiguration = new ConcurrentHashMap<String, String>();
 
 	private static Map<String, List<String>> categoryMap = new ConcurrentHashMap<String, List<String>>();
 
@@ -102,18 +105,37 @@ public class CacheInterceptor implements MethodInterceptor {
 		if (selfPopulatingScheduledCache) {
 			Long refresh = invocation.getMethod().getAnnotation(Cached.class)
 					.refreshTime();
-			final String cacheNameFromMethodInvocation = getCacheNameFromMethodInvocation(invocation);
+			String cacheNameFromMethodInvocation = getCacheNameFromMethodInvocation(invocation);
+
+			if (invocation.getMethod()
+					.getAnnotation(SpecialConfig.class) != null) {
+				String specialConfig = invocation.getMethod()
+						.getAnnotation(SpecialConfig.class)
+						.cacheConfigurationName();
+				String dynamicRefresh = getCacheConfiguration().get(
+						specialConfig);
+				if (dynamicRefresh != null) {
+					try {
+						refresh = Long.parseLong(dynamicRefresh);
+					} catch (Exception ex) {
+						logger.error(
+								"Dynamic refresh specified could not parse", ex);
+					}
+
+				}
+			}
 			getCacheManager().addCache(cacheNameFromMethodInvocation);
 			final Ehcache rawCache = getCacheManager().getEhcache(
 					cacheNameFromMethodInvocation);
 			rawCache.getCacheConfiguration().setTimeToLiveSeconds(0);
 			rawCache.getCacheConfiguration().setTimeToIdleSeconds(0);
 			rawCache.getCacheConfiguration().setEternal(true);
-			//Problems with cache persistant from jvm to jvm
+			// Problems with cache persistant from jvm to jvm
 			rawCache.getCacheConfiguration().diskPersistent(false);
-			CacheEntryFactory cacheEntryFactory = new CacheEntryTimedFactory(invocation,refresh);
-					
-					SelfPopulatingCache selfPopulatingCache = new SelfPopulatingCache(
+			CacheEntryFactory cacheEntryFactory = new CacheEntryTimedFactory(
+					invocation, refresh);
+
+			SelfPopulatingCache selfPopulatingCache = new SelfPopulatingCache(
 					rawCache, cacheEntryFactory);
 			getCacheManager().replaceCacheWithDecoratedCache(rawCache,
 					selfPopulatingCache);
@@ -127,13 +149,12 @@ public class CacheInterceptor implements MethodInterceptor {
 			JobDetail cacheUpdatingJob = newJob(CacheUpdatingJob.class)
 					.withIdentity(classAndMethod + "_Updatejob", packageString)
 					.build();
-			
+
 			Trigger trigger = newTrigger()
 					.withIdentity(classAndMethod + "_Trigger", packageString)
 					.withSchedule(
-							simpleSchedule()
-									.withIntervalInMilliseconds(refresh+20)
-									.repeatForever()).build();
+							simpleSchedule().withIntervalInMilliseconds(
+									refresh + 20).repeatForever()).build();
 			trigger.getJobDataMap().put(
 					CacheUpdatingJob.selfPopulatingCacheKey,
 					cacheNameFromMethodInvocation);
@@ -142,7 +163,7 @@ public class CacheInterceptor implements MethodInterceptor {
 				StdSchedulerFactory.getDefaultScheduler().scheduleJob(
 						cacheUpdatingJob, trigger);
 			} catch (SchedulerException e) {
-				logger.error("unable to schedule",e);
+				logger.error("unable to schedule", e);
 			}
 
 		} else {
@@ -154,8 +175,7 @@ public class CacheInterceptor implements MethodInterceptor {
 
 	private boolean cacheCreated(MethodInvocation invocation) {
 		String cacheNameFromMethodInvocation = getCacheNameFromMethodInvocation(invocation);
-		return getCacheManager().cacheExists(
-				cacheNameFromMethodInvocation);
+		return getCacheManager().cacheExists(cacheNameFromMethodInvocation);
 	}
 
 	private Ehcache getCache(MethodInvocation invocation) {
@@ -166,6 +186,14 @@ public class CacheInterceptor implements MethodInterceptor {
 	private String getCacheNameFromMethodInvocation(MethodInvocation invocation) {
 
 		return getCacheNameFromMethod(invocation.getMethod());
+	}
+
+	public String getSpecialConfiguration(String name) {
+		return getCacheConfiguration().get(name);
+	}
+
+	public String putSpecialConfiguration(String name, String value) {
+		return getCacheConfiguration().put(name, value);
 	}
 
 	public static String getCacheNameFromMethod(Method method) {
@@ -257,6 +285,15 @@ public class CacheInterceptor implements MethodInterceptor {
 	@Inject
 	public static void setInjector(Injector injector) {
 		CacheInterceptor.injector = injector;
+	}
+
+	public static Map<String, String> getCacheConfiguration() {
+		return cacheConfiguration;
+	}
+
+	public static void setCacheConfiguration(
+			Map<String, String> cacheConfiguration) {
+		CacheInterceptor.cacheConfiguration = cacheConfiguration;
 	}
 
 }

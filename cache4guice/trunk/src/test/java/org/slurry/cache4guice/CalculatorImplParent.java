@@ -3,6 +3,7 @@ package org.slurry.cache4guice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slurry.cache4guice.annotation.Cached;
+import org.slurry.cache4guice.annotation.SpecialConfig;
 
 public class CalculatorImplParent implements Calculator {
 	
@@ -48,6 +49,8 @@ public class CalculatorImplParent implements Calculator {
 		return 0;
 	}
 static int add=0;
+
+	@SpecialConfig(cacheConfigurationName = Names.specialCache)
 	@Cached(SelfPopulatingScheduledCache=true,refreshTime=1500)
 	public int serveStaleAndRefreshedData(Integer number1, Integer number2) {
 		add+=number1+number2;

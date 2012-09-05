@@ -36,7 +36,7 @@ public class Cache4GuiceBenchMarkTest {
 
 		logger = LoggerFactory.getLogger(Cache4GuiceBenchMarkTest.class);
 
-		injector = Guice.createInjector(new GuiceModule(),new CacheModule());
+		injector = Guice.createInjector(new GuiceModule(), new CacheModule());
 
 		injector.injectMembers(this);
 
@@ -101,18 +101,19 @@ public class Cache4GuiceBenchMarkTest {
 		logger.debug("Done calculating Cached {} ms ", stopwatch.getTime());
 
 	}
-	
-	
+
 	@Test
-	public void runTimeCacheConfigurationBlockingTest() throws InterruptedException {
+	public void runTimeCacheConfigurationBlockingTest()
+			throws InterruptedException {
 
 		List<Ehcache> findCaches = getCache4GuiceHelper().findCaches(
 				CalculatorImplParent.class);
 		for (Ehcache cache : findCaches) {
-			BlockingCache blockingCache=new BlockingCache(cache);
+			BlockingCache blockingCache = new BlockingCache(cache);
 			cache.getCacheConfiguration().setTimeToLiveSeconds(1);
-			Boolean test=cache.equals(blockingCache);
-			cache.getCacheManager().replaceCacheWithDecoratedCache(cache, blockingCache);
+			Boolean test = cache.equals(blockingCache);
+			cache.getCacheManager().replaceCacheWithDecoratedCache(cache,
+					blockingCache);
 		}
 		StopWatch stopwatch = new StopWatch();
 		stopwatch.start();
@@ -130,7 +131,6 @@ public class Cache4GuiceBenchMarkTest {
 
 		stopwatch = new StopWatch();
 
-
 		// wait for cache to expire
 		Thread.sleep(1500);
 
@@ -139,7 +139,7 @@ public class Cache4GuiceBenchMarkTest {
 		logger.debug("Done calculating Cached {} ms ", stopwatch.getTime());
 
 	}
-	
+
 	@Test
 	public void checkingCacheCollision() throws InterruptedException {
 
@@ -170,27 +170,22 @@ public class Cache4GuiceBenchMarkTest {
 		logger.debug("Done calculating  Non Cached {} ms ", stopwatch.getTime());
 
 	}
-	
+
 	@Test
-	public void getCacheFromName() throws InterruptedException{
+	public void getCacheFromName() throws InterruptedException {
 		Ehcache cache = getCache4GuiceHelper().getCache(Names.cacheNameOne);
 		Assert.assertNotNull(cache);
 
-
-
-	}	
+	}
 
 	@Test
-	public void getCachesFromCategoryName() throws InterruptedException{
-		List<Ehcache> caches = getCache4GuiceHelper().getCaches(Names.cacheCategoryA);
+	public void getCachesFromCategoryName() throws InterruptedException {
+		List<Ehcache> caches = getCache4GuiceHelper().getCaches(
+				Names.cacheCategoryA);
 		Assert.assertNotNull(caches);
 		Assert.assertEquals(2, caches.size());
 
-
-
 	}
-	
-	
 
 	@After
 	public void afterTest() {
