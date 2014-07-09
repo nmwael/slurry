@@ -10,14 +10,16 @@ public interface Calculator {
 
 	public BogusClass veryLooooooooooooooooooooooooooooooooongNaaaaaaaammeeeeSoDiskCacheHasProoooooooooooblem(
 			Integer number, Integer number2) throws InterruptedException;
-	
+
 	public int imNamed(Integer number);
-	
+
 	public Integer sloowOperation(Integer number);
-	
+
 	public Integer getSloowOperationCounter();
-	
+
 	public int serveStaleAndRefreshedData(Integer number1,Integer number2);
+
+	public String delegatedMethod();
 
 
 }

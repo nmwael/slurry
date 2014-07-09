@@ -1,14 +1,17 @@
 package org.slurry.cache4guice;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slurry.cache4guice.annotation.Cached;
 import org.slurry.cache4guice.annotation.SpecialConfig;
 
 public class CalculatorImplParent implements Calculator {
-	
-	
+
 	private Logger logger = LoggerFactory.getLogger(CalculatorImplParent.class);
+
+	private ThirdPartyInjection thirdPartyInjection;
 
 	@Cached
 	public int calculateSomethingWild(Integer number)
@@ -27,7 +30,7 @@ public class CalculatorImplParent implements Calculator {
 		return number + number2;
 	}
 
-	@Cached(category=Names.cacheCategoryA)
+	@Cached(category = Names.cacheCategoryA)
 	public BogusClass veryLooooooooooooooooooooooooooooooooongNaaaaaaaammeeeeSoDiskCacheHasProoooooooooooblem(
 			Integer number, Integer number2) throws InterruptedException {
 		Thread.sleep(2000);
@@ -44,30 +47,31 @@ public class CalculatorImplParent implements Calculator {
 		return null;
 	}
 
-	@Cached(name=Names.cacheNameOne,category=Names.cacheCategoryA)
-	public int imNamed(Integer number){
+	@Cached(name = Names.cacheNameOne, category = Names.cacheCategoryA)
+	public int imNamed(Integer number) {
 		return 0;
 	}
-static int add=0;
+
+	static int add = 0;
 
 	@SpecialConfig(cacheConfigurationName = Names.specialCache)
-	@Cached(SelfPopulatingScheduledCache=true,refreshTime=1500)
+	@Cached(SelfPopulatingScheduledCache = true, refreshTime = 1500)
 	public int serveStaleAndRefreshedData(Integer number1, Integer number2) {
-		add+=number1+number2;
+		add += number1 + number2;
 		add++;
 		return add;
 	}
 
-	private int sloowOperationCounter=0;
-	
-	@Cached(SelfPopulatingScheduledCache=true,refreshTime=1500)
+	private int sloowOperationCounter = 0;
+
+	@Cached(SelfPopulatingScheduledCache = true, refreshTime = 1500)
 	public Integer sloowOperation(Integer number) {
-		logger.debug("was called +>"+sloowOperationCounter+"<");
+		logger.debug("was called +>" + sloowOperationCounter + "<");
 		try {
 			logger.debug("begin sleep");
 			Thread.sleep(10000);
 			sloowOperationCounter++;
-			logger.warn("result>"+sloowOperationCounter+"<");
+			logger.warn("result>" + sloowOperationCounter + "<");
 			return sloowOperationCounter;
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -78,8 +82,23 @@ static int add=0;
 
 	@Override
 	public Integer getSloowOperationCounter() {
-		
+
 		return sloowOperationCounter;
+	}
+
+	@Cached(SelfPopulatingScheduledCache=true,refreshTime=2)
+	@Override
+	public String delegatedMethod() {
+		return getThirdPartyInjection().getMessage();
+	}
+
+	public ThirdPartyInjection getThirdPartyInjection() {
+		return thirdPartyInjection;
+	}
+
+	@Inject
+	public void setThirdPartyInjection(ThirdPartyInjection thirdPartyInjection) {
+		this.thirdPartyInjection = thirdPartyInjection;
 	}
 
 }
