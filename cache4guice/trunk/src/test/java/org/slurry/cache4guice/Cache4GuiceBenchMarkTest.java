@@ -3,6 +3,7 @@ package org.slurry.cache4guice;
 import java.util.List;
 
 import junit.framework.Assert;
+import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.constructs.blocking.BlockingCache;
 
@@ -10,6 +11,9 @@ import org.apache.commons.lang.time.StopWatch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slurry.cache4guice.cache.util.Cache4GuiceHelper;
@@ -40,6 +44,13 @@ public class Cache4GuiceBenchMarkTest {
 
 		injector.injectMembers(this);
 
+	}
+
+	@After
+	public void afterTest() throws SchedulerException {
+		Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+		scheduler.shutdown();
+		CacheManager.getInstance().shutdown();
 	}
 
 	@Test
@@ -173,6 +184,7 @@ public class Cache4GuiceBenchMarkTest {
 
 	@Test
 	public void getCacheFromName() throws InterruptedException {
+		getCacheCalculator().imNamed(1);
 		Ehcache cache = getCache4GuiceHelper().getCache(Names.cacheNameOne);
 		Assert.assertNotNull(cache);
 
@@ -184,11 +196,6 @@ public class Cache4GuiceBenchMarkTest {
 				Names.cacheCategoryA);
 		Assert.assertNotNull(caches);
 		Assert.assertEquals(2, caches.size());
-
-	}
-
-	@After
-	public void afterTest() {
 
 	}
 

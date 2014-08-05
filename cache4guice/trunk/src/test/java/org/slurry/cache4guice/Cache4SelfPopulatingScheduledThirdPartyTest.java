@@ -2,10 +2,14 @@ package org.slurry.cache4guice;
 
 import static com.google.inject.name.Names.named;
 import junit.framework.Assert;
+import net.sf.ehcache.CacheManager;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slurry.cache4guice.aop.CacheInterceptor;
@@ -69,7 +73,10 @@ public class Cache4SelfPopulatingScheduledThirdPartyTest {
 
 
 	@After
-	public void afterTest() {
+	public void afterTest() throws SchedulerException {
+		Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+		scheduler.shutdown();
+		CacheManager.getInstance().shutdown();
 
 	}
 
