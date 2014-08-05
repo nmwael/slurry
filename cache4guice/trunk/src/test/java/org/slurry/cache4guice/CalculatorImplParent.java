@@ -101,4 +101,34 @@ public class CalculatorImplParent implements Calculator {
 		this.thirdPartyInjection = thirdPartyInjection;
 	}
 
+	private int serveStaleAndRefreshedDataSometimesThrowError=-1;
+
+	@Cached(SelfPopulatingScheduledCache=true,refreshTime=200)
+	@Override
+	public int serveStaleAndRefreshedDataSometimesThrowError(int i, int j) {
+		serveStaleAndRefreshedDataSometimesThrowError++;
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(serveStaleAndRefreshedDataSometimesThrowError>10)
+		{
+
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			throw new RuntimeException();
+		}
+
+
+
+		return i+j;
+	}
+
 }

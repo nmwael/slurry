@@ -12,9 +12,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.inject.Named;
+
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.config.PersistenceConfiguration;
+import net.sf.ehcache.config.PersistenceConfiguration.Strategy;
 import net.sf.ehcache.constructs.blocking.CacheEntryFactory;
 import net.sf.ehcache.constructs.blocking.SelfPopulatingCache;
 
@@ -30,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import org.slurry.cache4guice.annotation.Cached;
 import org.slurry.cache4guice.annotation.SpecialConfig;
 import org.slurry.cache4guice.cache.util.CacheEntryTimedFactory;
+import org.slurry.cache4guice.cache.util.MethodInvocationHolder;
+import org.slurry.cache4guice.module.CacheModule;
 import org.slurry.cache4guice.quartz.CacheUpdatingJob;
 
 import com.google.inject.Inject;
@@ -51,6 +57,8 @@ public class CacheInterceptor implements MethodInterceptor {
 
 	private static Injector injector;
 
+	private Map<String, MethodInvocationHolder> invocations;
+
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		setupCacheIfNecessary(invocation);
 
@@ -60,8 +68,11 @@ public class CacheInterceptor implements MethodInterceptor {
 
 	private Object getResultFromCacheOrMethod(MethodInvocation invocation)
 			throws Throwable {
+		getInvocations().put(getCacheNameFromMethodInvocation(invocation)+getCacheKey(invocation), new MethodInvocationHolder(invocation) );
+
 		Ehcache cache = getCache(invocation);
 		String cacheKey = getCacheKey(invocation);
+
 		Element element = cache.get(cacheKey);
 		if (element != null) {
 			logger.debug("Cache HIT >" + cache.getName() + "<");
@@ -86,7 +97,7 @@ public class CacheInterceptor implements MethodInterceptor {
 		return getCacheKeyGenerator().getCacheKey(invocation);
 	}
 
-	private void setupCacheIfNecessary(MethodInvocation invocation) {
+	private synchronized void setupCacheIfNecessary(MethodInvocation invocation) {
 		if (!cacheCreated(invocation)) {
 			createCache(invocation);
 
@@ -99,7 +110,6 @@ public class CacheInterceptor implements MethodInterceptor {
 	 * @param invocation
 	 */
 	private void createCache(final MethodInvocation invocation) {
-
 		Boolean selfPopulatingScheduledCache = invocation.getMethod()
 				.getAnnotation(Cached.class).SelfPopulatingScheduledCache();
 		if (selfPopulatingScheduledCache) {
@@ -131,7 +141,7 @@ public class CacheInterceptor implements MethodInterceptor {
 			rawCache.getCacheConfiguration().setTimeToIdleSeconds(0);
 			rawCache.getCacheConfiguration().setEternal(true);
 			// Problems with cache persistant from jvm to jvm
-			rawCache.getCacheConfiguration().diskPersistent(false);
+			rawCache.getCacheConfiguration().persistence(new PersistenceConfiguration().strategy(Strategy.NONE));
 			CacheEntryFactory cacheEntryFactory = new CacheEntryTimedFactory(
 					invocation, refresh);
 
@@ -183,7 +193,7 @@ public class CacheInterceptor implements MethodInterceptor {
 				getCacheNameFromMethodInvocation(invocation));
 	}
 
-	private String getCacheNameFromMethodInvocation(MethodInvocation invocation) {
+	public String getCacheNameFromMethodInvocation(MethodInvocation invocation) {
 
 		return getCacheNameFromMethod(invocation.getMethod());
 	}
@@ -294,6 +304,15 @@ public class CacheInterceptor implements MethodInterceptor {
 	public static void setCacheConfiguration(
 			Map<String, String> cacheConfiguration) {
 		CacheInterceptor.cacheConfiguration = cacheConfiguration;
+	}
+
+	public Map<String, MethodInvocationHolder> getInvocations() {
+		return invocations;
+	}
+
+	@Inject
+	public void setInvocations(@Named(CacheModule.INVOCATION_MAP_NAME) Map<String, MethodInvocationHolder> invocations) {
+		this.invocations = invocations;
 	}
 
 }

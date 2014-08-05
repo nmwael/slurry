@@ -5,14 +5,13 @@
             eternal="false"
             timeToIdleSeconds="120"
             timeToLiveSeconds="120"
-            overflowToDisk="true"
+            overflowToDisk="false"
             maxElementsOnDisk="10000000"
-            diskPersistent="false"
             diskExpiryThreadIntervalSeconds="120"
             memoryStoreEvictionPolicy="LRU"
             >
 <!--                <cacheDecoratorFactory class="org.slurry.cache4guice.cache.decoratorFactory.BlockingCacheDecoratorFactory" properties="" /> -->
             </defaultCache>
-            
+
            <diskStore path="java.io.tmpdir"/>
 </ehcache>

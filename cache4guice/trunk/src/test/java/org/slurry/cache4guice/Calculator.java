@@ -21,5 +21,7 @@ public interface Calculator {
 
 	public String delegatedMethod();
 
+	public int serveStaleAndRefreshedDataSometimesThrowError(int i, int j);
+
 
 }
