@@ -73,7 +73,7 @@ public class CalculatorImplParent implements Calculator {
 		logger.debug("was called +>" + sloowOperationCounter + "<");
 		try {
 			logger.debug("begin sleep");
-			Thread.sleep(10000);
+			Thread.sleep(100);
 			sloowOperationCounter++;
 			logger.warn("result>" + sloowOperationCounter + "<");
 			return sloowOperationCounter;

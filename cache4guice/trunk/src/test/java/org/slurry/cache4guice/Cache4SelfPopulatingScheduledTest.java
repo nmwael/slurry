@@ -95,7 +95,7 @@ public class Cache4SelfPopulatingScheduledTest {
 			stopwatch.reset();
 		}
 		stopwatch2.stop();
-		Assert.assertTrue(stopwatch2.getTime()< 50*105);
+		Assert.assertTrue(stopwatch2.getTime()< 60*105);
 		Assert.assertTrue("cache should have been updated",5<result);
 		
 
@@ -108,10 +108,10 @@ public class Cache4SelfPopulatingScheduledTest {
 		Integer result = getCacheCalculator()
 				.sloowOperation(5);
 		stopwatch.stop();
-		Assert.assertTrue("Refresh took has to be over <10000>, was <"+stopwatch.getTime()+">", stopwatch.getTime()>10000);
+		Assert.assertTrue("Refresh took has to be over <10000>, was <"+stopwatch.getTime()+">", stopwatch.getTime()>100);
 		
 		stopwatch.reset();
-		Thread.sleep(1000*60*60);
+		Thread.sleep(10*60*60);
 		stopwatch.start();
 		result = getCacheCalculator()
 				.sloowOperation(5);
