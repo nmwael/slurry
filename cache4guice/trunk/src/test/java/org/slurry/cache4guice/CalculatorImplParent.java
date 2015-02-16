@@ -12,6 +12,10 @@ public class CalculatorImplParent implements Calculator {
 	private Logger logger = LoggerFactory.getLogger(CalculatorImplParent.class);
 
 	private ThirdPartyInjection thirdPartyInjection;
+	
+	public CalculatorImplParent() {
+		logger.info("CalculatorImplParent instanciated");
+	}
 
 	@Cached
 	public int calculateSomethingWild(Integer number)
@@ -101,19 +105,20 @@ public class CalculatorImplParent implements Calculator {
 		this.thirdPartyInjection = thirdPartyInjection;
 	}
 
-	private int serveStaleAndRefreshedDataSometimesThrowError=-1;
+	private static int serveStaleAndRefreshedDataSometimesThrowError=0;
 
 	@Cached(SelfPopulatingScheduledCache=true,refreshTime=200)
 	@Override
 	public int serveStaleAndRefreshedDataSometimesThrowError(int i, int j) {
-		serveStaleAndRefreshedDataSometimesThrowError++;
+		
 		try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if(serveStaleAndRefreshedDataSometimesThrowError>10)
+		serveStaleAndRefreshedDataSometimesThrowError++;
+		if(serveStaleAndRefreshedDataSometimesThrowError>5 && serveStaleAndRefreshedDataSometimesThrowError<25)
 		{
 
 			try {
@@ -127,8 +132,25 @@ public class CalculatorImplParent implements Calculator {
 		}
 
 
+		return serveStaleAndRefreshedDataSometimesThrowError;
+	}
 
-		return i+j;
+	private static Integer serveStaleAndRefreshedDataSometimesThrowErrorCounter=0;
+	@Cached(SelfPopulatingScheduledCache=true,refreshTime=200)
+	@Override
+	public Integer serveStaleAndRefreshedDataSometimesThrowError() {
+		logger.warn("invocation number >" + serveStaleAndRefreshedDataSometimesThrowErrorCounter + "<");
+		if(serveStaleAndRefreshedDataSometimesThrowErrorCounter>=5)
+		{
+			try {
+				Thread.sleep(300);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		serveStaleAndRefreshedDataSometimesThrowErrorCounter++;
+		return serveStaleAndRefreshedDataSometimesThrowErrorCounter;
 	}
 
 }

@@ -26,7 +26,7 @@ public class CacheUpdatingJob implements Job {
 		String cacheName = context.getMergedJobDataMap().getString(selfPopulatingCacheKey);
 		Ehcache cache = getCacheManager().getEhcache(cacheName);
 		SelfPopulatingCache selfPopulatingCache=(SelfPopulatingCache)  cache;
-		selfPopulatingCache.refresh();
+		selfPopulatingCache.refresh(true);
 		
 	}
 

@@ -141,7 +141,7 @@ public class CacheInterceptor implements MethodInterceptor {
 			rawCache.getCacheConfiguration().setTimeToIdleSeconds(0);
 			rawCache.getCacheConfiguration().setEternal(true);
 			// Problems with cache persistant from jvm to jvm
-			rawCache.getCacheConfiguration().persistence(new PersistenceConfiguration().strategy(Strategy.NONE));
+			//rawCache.getCacheConfiguration().persistence(new PersistenceConfiguration().strategy(Strategy.NONE));
 			CacheEntryFactory cacheEntryFactory = new CacheEntryTimedFactory(
 					invocation, refresh);
 

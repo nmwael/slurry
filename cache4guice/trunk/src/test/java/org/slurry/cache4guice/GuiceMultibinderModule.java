@@ -13,15 +13,18 @@ public class GuiceMultibinderModule extends PrivateModule {
 	@Override
 	protected void configure() {
 		
+
+		
 		bind(
 				Key.get(Calculator.class,
-						named(calculatorId01))).to(
-								CalculatorImplChild.class).asEagerSingleton();
+						named(calculatorId01))).to(CalculatorImplChild.class);
 
 		
 		expose(Key.get(Calculator.class,
 				named(calculatorId01)));
 
+		
+		
 		bind(
 				Key.get(Calculator.class,
 						named(calculatorId02))).to(
