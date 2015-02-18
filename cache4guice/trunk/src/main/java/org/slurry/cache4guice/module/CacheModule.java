@@ -5,8 +5,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.sf.ehcache.CacheManager;
 
-import org.aopalliance.intercept.MethodInvocation;
-import org.nnsoft.guice.guartz.QuartzModule;
 import org.slurry.cache4guice.annotation.Cached;
 import org.slurry.cache4guice.aop.CacheInterceptor;
 import org.slurry.cache4guice.aop.CacheKeyGenerator;
@@ -14,7 +12,6 @@ import org.slurry.cache4guice.cache.StringBasedKeyGenerator;
 import org.slurry.cache4guice.cache.util.Cache4GuiceHelper;
 import org.slurry.cache4guice.cache.util.Cache4GuiceHelperImpl;
 import org.slurry.cache4guice.cache.util.CacheEntryTimedFactory;
-import org.slurry.cache4guice.cache.util.CleanupInvocationsJob;
 import org.slurry.cache4guice.cache.util.MethodInvocationHolder;
 
 import com.google.inject.AbstractModule;
@@ -44,13 +41,13 @@ public class CacheModule extends AbstractModule {
 		bindInterceptor(Matchers.any(), Matchers.annotatedWith(Cached.class),
 				cacheInterceptor);
 		bind(Cache4GuiceHelper.class).to(Cache4GuiceHelperImpl.class);
-		install(new QuartzModule() {
-			@Override
-			protected void schedule() {
-				scheduleJob(CleanupInvocationsJob.class).withCronExpression("0 0/10 * 1/1 * ? *");
-
-			}
-		});
+//		install(new QuartzModule() {
+//			@Override
+//			protected void schedule() {
+//				scheduleJob(CleanupInvocationsJob.class).withCronExpression("0 0/10 * 1/1 * ? *");
+//
+//			}
+//		});
 
 	}
 

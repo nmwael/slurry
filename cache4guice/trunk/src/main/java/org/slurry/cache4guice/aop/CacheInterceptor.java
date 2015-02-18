@@ -17,20 +17,18 @@ import javax.inject.Named;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.config.PersistenceConfiguration;
-import net.sf.ehcache.config.PersistenceConfiguration.Strategy;
 import net.sf.ehcache.constructs.blocking.CacheEntryFactory;
 import net.sf.ehcache.constructs.blocking.SelfPopulatingCache;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggerFactory;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slurry.cache4guice.annotation.Cached;
 import org.slurry.cache4guice.annotation.SpecialConfig;
 import org.slurry.cache4guice.cache.util.CacheEntryTimedFactory;
@@ -46,7 +44,7 @@ public class CacheInterceptor implements MethodInterceptor {
 	private CacheManager cacheManager;
 	private CacheKeyGenerator cacheKeyGenerator;
 
-	private static Logger logger = LoggerFactory
+	private static Logger logger = Logger
 			.getLogger(CacheInterceptor.class);
 
 	private static Map<String, UUID> uuidMap = new ConcurrentHashMap<String, UUID>();
@@ -172,6 +170,7 @@ public class CacheInterceptor implements MethodInterceptor {
 			try {
 				StdSchedulerFactory.getDefaultScheduler().scheduleJob(
 						cacheUpdatingJob, trigger);
+				StdSchedulerFactory.getDefaultScheduler().start();
 			} catch (SchedulerException e) {
 				logger.error("unable to schedule", e);
 			}
@@ -182,6 +181,7 @@ public class CacheInterceptor implements MethodInterceptor {
 		}
 
 	}
+	
 
 	private boolean cacheCreated(MethodInvocation invocation) {
 		String cacheNameFromMethodInvocation = getCacheNameFromMethodInvocation(invocation);

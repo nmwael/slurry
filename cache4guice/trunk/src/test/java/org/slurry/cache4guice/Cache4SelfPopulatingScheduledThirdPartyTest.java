@@ -1,6 +1,5 @@
 package org.slurry.cache4guice;
 
-import static com.google.inject.name.Names.named;
 import junit.framework.Assert;
 import net.sf.ehcache.CacheManager;
 
@@ -12,14 +11,12 @@ import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slurry.cache4guice.aop.CacheInterceptor;
 import org.slurry.cache4guice.cache.util.Cache4GuiceHelper;
 import org.slurry.cache4guice.module.CacheModule;
 
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.PrivateModule;
 import com.google.inject.name.Named;
 
