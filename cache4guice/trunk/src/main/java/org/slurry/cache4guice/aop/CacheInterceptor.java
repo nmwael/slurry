@@ -170,7 +170,6 @@ public class CacheInterceptor implements MethodInterceptor {
 			try {
 				StdSchedulerFactory.getDefaultScheduler().scheduleJob(
 						cacheUpdatingJob, trigger);
-				StdSchedulerFactory.getDefaultScheduler().start();
 			} catch (SchedulerException e) {
 				logger.error("unable to schedule", e);
 			}

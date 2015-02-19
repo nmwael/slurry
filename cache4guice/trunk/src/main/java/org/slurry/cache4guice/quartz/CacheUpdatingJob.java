@@ -4,16 +4,18 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.constructs.blocking.SelfPopulatingCache;
 
 import org.apache.log4j.Logger;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.StatefulJob;
 import org.slurry.cache4guice.aop.CacheInterceptor;
 
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-
+@DisallowConcurrentExecution
 public class CacheUpdatingJob implements Job {
 	
 	public static String selfPopulatingCacheKey="selfPopulatingCacheKey";

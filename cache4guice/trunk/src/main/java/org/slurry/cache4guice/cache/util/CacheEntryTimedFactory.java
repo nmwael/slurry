@@ -33,6 +33,7 @@ public class CacheEntryTimedFactory implements CacheEntryFactory {
 	private static CacheInterceptor cacheInterceptor;
 	private MethodInvocation initialInvocation;
 	private final Long refreshTime;
+	private static ExecutorService executor=Executors.newCachedThreadPool();
 
 	public CacheEntryTimedFactory(MethodInvocation initialInvocation,
 			Long refreshTime) {
@@ -61,7 +62,7 @@ public class CacheEntryTimedFactory implements CacheEntryFactory {
 			final Method methodExecute = instance.getClass().getMethod(
 					method.getName(), method.getParameterTypes());
 
-			ExecutorService executor = Executors.newCachedThreadPool();
+			
 			Callable<Object> task = new Callable<Object>() {
 				public Object call() throws ExecutionException {
 					Object result = null;
