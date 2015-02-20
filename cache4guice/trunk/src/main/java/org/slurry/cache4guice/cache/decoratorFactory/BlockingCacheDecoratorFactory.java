@@ -17,7 +17,8 @@ public class BlockingCacheDecoratorFactory extends CacheDecoratorFactory {
 	private BlockingCache createBlockingCache(Ehcache cache) {
 		
 		BlockingCache blockingCache = new BlockingCache(cache);
-		blockingCache.setTimeoutMillis(0);
+		//TODO IF WE HAVE NO TIMEOUT AND SOMETHING GOES WRONG THEN NUMBER OF THREADS EXPLODE
+		blockingCache.setTimeoutMillis(1000*30);
 		return blockingCache;
 	}
 
