@@ -34,7 +34,7 @@ public class CacheUpdatingJob implements Job {
 	@Override
 	public void execute(JobExecutionContext context)
 			throws JobExecutionException {
-		logger.info("executing job");
+		logger.info("executing job >"+context.getJobDetail().getKey().toString()+"<");
 		String cacheName = context.getMergedJobDataMap().getString(selfPopulatingCacheKey);
 		Ehcache cache = getCacheManager().getEhcache(cacheName);
 		SelfPopulatingCache selfPopulatingCache=(SelfPopulatingCache)  cache;

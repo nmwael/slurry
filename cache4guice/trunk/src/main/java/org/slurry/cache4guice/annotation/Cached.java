@@ -37,10 +37,16 @@ public @interface Cached {
 	/**
 	 * Used together with SelfPopulatingScheduledCache to specify the time between updates
 	 * specified in milliseconds
-	 * Will Have a grace time of 20 miliseconds used to detecting timeout
+	 * Will Have a grace time of 20 milliseconds used to detecting timeout
 	 * @return
 	 */
 	long refreshTime() default 120;
+        
+        /**
+         * Used together with SelfPopulatingScheduledCache , if true the updating job will be placed in the "slow" scheduler with the rest of the slow operations
+         * @return 
+         */
+        boolean slowOperation() default false;
 	
 
 }

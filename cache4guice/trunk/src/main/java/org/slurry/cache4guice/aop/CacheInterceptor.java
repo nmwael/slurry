@@ -24,7 +24,6 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggerFactory;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
@@ -38,280 +37,303 @@ import org.slurry.cache4guice.quartz.CacheUpdatingJob;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import org.quartz.Scheduler;
 
 public class CacheInterceptor implements MethodInterceptor {
 
-	private CacheManager cacheManager;
-	private CacheKeyGenerator cacheKeyGenerator;
+    private CacheManager cacheManager;
+    private CacheKeyGenerator cacheKeyGenerator;
 
-	private static Logger logger = Logger
-			.getLogger(CacheInterceptor.class);
+    private static Logger logger = Logger
+            .getLogger(CacheInterceptor.class);
 
-	private static Map<String, UUID> uuidMap = new ConcurrentHashMap<String, UUID>();
+    private static Map<String, UUID> uuidMap = new ConcurrentHashMap<String, UUID>();
 
-	private static Map<String, String> cacheConfiguration = new ConcurrentHashMap<String, String>();
+    private static Map<String, String> cacheConfiguration = new ConcurrentHashMap<String, String>();
 
-	private static Map<String, List<String>> categoryMap = new ConcurrentHashMap<String, List<String>>();
+    private static Map<String, List<String>> categoryMap = new ConcurrentHashMap<String, List<String>>();
 
-	private static Injector injector;
+    private static Injector injector;
 
-	private Map<String, MethodInvocationHolder> invocations;
+    private Map<String, MethodInvocationHolder> invocations;
 
-	public Object invoke(MethodInvocation invocation) throws Throwable {
-		setupCacheIfNecessary(invocation);
+    private Scheduler slowScheduler;
 
-		return getResultFromCacheOrMethod(invocation);
+    public Object invoke(MethodInvocation invocation) throws Throwable {
+        setupCacheIfNecessary(invocation);
 
-	}
+        return getResultFromCacheOrMethod(invocation);
 
-	private Object getResultFromCacheOrMethod(MethodInvocation invocation)
-			throws Throwable {
-		getInvocations().put(getCacheNameFromMethodInvocation(invocation)+getCacheKey(invocation), new MethodInvocationHolder(invocation) );
+    }
 
-		Ehcache cache = getCache(invocation);
-		String cacheKey = getCacheKey(invocation);
+    private Object getResultFromCacheOrMethod(MethodInvocation invocation)
+            throws Throwable {
+        getInvocations().put(getCacheNameFromMethodInvocation(invocation) + getCacheKey(invocation), new MethodInvocationHolder(invocation));
 
-		Element element = cache.get(cacheKey);
-		if (element != null) {
-			logger.debug("Cache HIT >" + cache.getName() + "<");
-			return element.getValue();
-		} else {
-			logger.debug("Cache MISS >" + cache.getName() + "<");
-			return getResultAndCache(invocation, cache, cacheKey);
-		}
+        Ehcache cache = getCache(invocation);
+        String cacheKey = getCacheKey(invocation);
 
-	}
+        Element element = cache.get(cacheKey);
+        if (element != null) {
+            logger.debug("Cache HIT >" + cache.getName() + "<");
+            return element.getValue();
+        } else {
+            logger.debug("Cache MISS >" + cache.getName() + "<");
+            return getResultAndCache(invocation, cache, cacheKey);
+        }
 
-	private Object getResultAndCache(MethodInvocation invocation,
-			Ehcache cache, String cacheKey) throws Throwable {
-		Object methodResult = invocation.proceed();
-		Element elementResult = new Element(cacheKey, methodResult);
-		cache.put(elementResult);
-		return methodResult;
-	}
+    }
 
-	private String getCacheKey(MethodInvocation invocation) {
+    private Object getResultAndCache(MethodInvocation invocation,
+            Ehcache cache, String cacheKey) throws Throwable {
+        Object methodResult = invocation.proceed();
+        Element elementResult = new Element(cacheKey, methodResult);
+        cache.put(elementResult);
+        return methodResult;
+    }
 
-		return getCacheKeyGenerator().getCacheKey(invocation);
-	}
+    private String getCacheKey(MethodInvocation invocation) {
 
-	private synchronized void setupCacheIfNecessary(MethodInvocation invocation) {
-		if (!cacheCreated(invocation)) {
-			createCache(invocation);
+        return getCacheKeyGenerator().getCacheKey(invocation);
+    }
 
-		}
-	}
+    private synchronized void setupCacheIfNecessary(MethodInvocation invocation) {
+        if (!cacheCreated(invocation)) {
+            createCache(invocation);
 
-	/**
-	 * @TODO implement a way to help the user to generate different caches like
-	 *       nonblocking or blocking cache.
-	 * @param invocation
-	 */
-	private void createCache(final MethodInvocation invocation) {
-		Boolean selfPopulatingScheduledCache = invocation.getMethod()
-				.getAnnotation(Cached.class).SelfPopulatingScheduledCache();
-		if (selfPopulatingScheduledCache) {
-			Long refresh = invocation.getMethod().getAnnotation(Cached.class)
-					.refreshTime();
-			String cacheNameFromMethodInvocation = getCacheNameFromMethodInvocation(invocation);
+        }
+    }
 
-			if (invocation.getMethod()
-					.getAnnotation(SpecialConfig.class) != null) {
-				String specialConfig = invocation.getMethod()
-						.getAnnotation(SpecialConfig.class)
-						.cacheConfigurationName();
-				String dynamicRefresh = getCacheConfiguration().get(
-						specialConfig);
-				if (dynamicRefresh != null) {
-					try {
-						refresh = Long.parseLong(dynamicRefresh);
-					} catch (Exception ex) {
-						logger.error(
-								"Dynamic refresh specified could not parse", ex);
-					}
+    /**
+     * @TODO implement a way to help the user to generate different caches like
+     * nonblocking or blocking cache.
+     * @param invocation
+     */
+    private void createCache(final MethodInvocation invocation) {
+        Boolean selfPopulatingScheduledCache = invocation.getMethod()
+                .getAnnotation(Cached.class).SelfPopulatingScheduledCache();
+        if (selfPopulatingScheduledCache) {
+            Long refresh = invocation.getMethod().getAnnotation(Cached.class)
+                    .refreshTime();
+            Boolean slowOperation = invocation.getMethod().getAnnotation(Cached.class).slowOperation();
 
-				}
-			}
-			getCacheManager().addCache(cacheNameFromMethodInvocation);
-			final Ehcache rawCache = getCacheManager().getEhcache(
-					cacheNameFromMethodInvocation);
-			rawCache.getCacheConfiguration().setTimeToLiveSeconds(0);
-			rawCache.getCacheConfiguration().setTimeToIdleSeconds(0);
-			rawCache.getCacheConfiguration().setEternal(true);
-			// Problems with cache persistant from jvm to jvm
-			//rawCache.getCacheConfiguration().persistence(new PersistenceConfiguration().strategy(Strategy.NONE));
-			CacheEntryFactory cacheEntryFactory = new CacheEntryTimedFactory(
-					invocation, refresh);
+            String cacheNameFromMethodInvocation = getCacheNameFromMethodInvocation(invocation);
 
-			SelfPopulatingCache selfPopulatingCache = new SelfPopulatingCache(
-					rawCache, cacheEntryFactory);
-			getCacheManager().replaceCacheWithDecoratedCache(rawCache,
-					selfPopulatingCache);
+            if (invocation.getMethod()
+                    .getAnnotation(SpecialConfig.class) != null) {
+                String specialConfig = invocation.getMethod()
+                        .getAnnotation(SpecialConfig.class)
+                        .cacheConfigurationName();
+                String dynamicRefresh = getCacheConfiguration().get(
+                        specialConfig);
+                if (dynamicRefresh != null) {
+                    try {
+                        refresh = Long.parseLong(dynamicRefresh);
+                    } catch (Exception ex) {
+                        logger.error(
+                                "Dynamic refresh specified could not parse", ex);
+                    }
 
-			String classAndMethod = invocation.getMethod().getDeclaringClass()
-					.getCanonicalName()
-					+ invocation.getMethod().toString();
-			String packageString = invocation.getMethod().getDeclaringClass()
-					.getPackage().toString();
+                }
+            }
+            getCacheManager().addCache(cacheNameFromMethodInvocation);
+            final Ehcache rawCache = getCacheManager().getEhcache(
+                    cacheNameFromMethodInvocation);
+            rawCache.getCacheConfiguration().setTimeToLiveSeconds(0);
+            rawCache.getCacheConfiguration().setTimeToIdleSeconds(0);
+            rawCache.getCacheConfiguration().setEternal(true);
+            // Problems with cache persistant from jvm to jvm
+            //rawCache.getCacheConfiguration().persistence(new PersistenceConfiguration().strategy(Strategy.NONE));
+            CacheEntryFactory cacheEntryFactory = new CacheEntryTimedFactory(
+                    invocation, refresh);
 
-			JobDetail cacheUpdatingJob = newJob(CacheUpdatingJob.class)
-					.withIdentity(classAndMethod + "_Updatejob", packageString)
-					.build();
+            SelfPopulatingCache selfPopulatingCache = new SelfPopulatingCache(
+                    rawCache, cacheEntryFactory);
+            getCacheManager().replaceCacheWithDecoratedCache(rawCache,
+                    selfPopulatingCache);
 
-			Trigger trigger = newTrigger()
-					.withIdentity(classAndMethod + "_Trigger", packageString)
-					.withSchedule(
-							simpleSchedule().withIntervalInMilliseconds(
-									refresh + 20).repeatForever()).build();
-			trigger.getJobDataMap().put(
-					CacheUpdatingJob.selfPopulatingCacheKey,
-					cacheNameFromMethodInvocation);
+            String classAndMethod = invocation.getMethod().getDeclaringClass()
+                    .getCanonicalName()
+                    + invocation.getMethod().toString();
+            String packageString = invocation.getMethod().getDeclaringClass()
+                    .getPackage().toString();
 
-			try {
-				StdSchedulerFactory.getDefaultScheduler().scheduleJob(
-						cacheUpdatingJob, trigger);
-			} catch (SchedulerException e) {
-				logger.error("unable to schedule", e);
-			}
+            JobDetail cacheUpdatingJob = newJob(CacheUpdatingJob.class)
+                    .withIdentity(classAndMethod + cacheNameFromMethodInvocation + "_Updatejob", packageString)
+                    .build();
 
-		} else {
-			getCacheManager().addCache(
-					getCacheNameFromMethodInvocation(invocation));
-		}
+            Trigger trigger = newTrigger()
+                    .withIdentity(classAndMethod + cacheNameFromMethodInvocation + "_Trigger", packageString)
+                    .withSchedule(
+                            simpleSchedule().withIntervalInMilliseconds(
+                                    refresh + 20).repeatForever()).build();
+            trigger.getJobDataMap().put(
+                    CacheUpdatingJob.selfPopulatingCacheKey,
+                    cacheNameFromMethodInvocation);
 
-	}
-	
+            try {
+                if (slowOperation) {
+                    slowScheduler.scheduleJob(cacheUpdatingJob, trigger);
+                } else {
+                    StdSchedulerFactory.getDefaultScheduler().scheduleJob(
+                            cacheUpdatingJob, trigger);
+                }
+            } catch (SchedulerException e) {
+                logger.error("unable to schedule", e);
+            }
 
-	private boolean cacheCreated(MethodInvocation invocation) {
-		String cacheNameFromMethodInvocation = getCacheNameFromMethodInvocation(invocation);
-		return getCacheManager().cacheExists(cacheNameFromMethodInvocation);
-	}
+        } else {
+            getCacheManager().addCache(
+                    getCacheNameFromMethodInvocation(invocation));
+        }
 
-	private Ehcache getCache(MethodInvocation invocation) {
-		return getCacheManager().getEhcache(
-				getCacheNameFromMethodInvocation(invocation));
-	}
+    }
 
-	public String getCacheNameFromMethodInvocation(MethodInvocation invocation) {
+    private boolean cacheCreated(MethodInvocation invocation) {
+        String cacheNameFromMethodInvocation = getCacheNameFromMethodInvocation(invocation);
+        return getCacheManager().cacheExists(cacheNameFromMethodInvocation);
+    }
 
-		return getCacheNameFromMethod(invocation.getMethod());
-	}
+    private Ehcache getCache(MethodInvocation invocation) {
+        return getCacheManager().getEhcache(
+                getCacheNameFromMethodInvocation(invocation));
+    }
 
-	public String getSpecialConfiguration(String name) {
-		return getCacheConfiguration().get(name);
-	}
+    public String getCacheNameFromMethodInvocation(MethodInvocation invocation) {
 
-	public String putSpecialConfiguration(String name, String value) {
-		return getCacheConfiguration().put(name, value);
-	}
+        return getCacheNameFromMethod(invocation.getMethod());
+    }
 
-	public static String getCacheNameFromMethod(Method method) {
-		if (Modifier.isPrivate(method.getModifiers())) {
-			throw new NotImplementedException(
-					"Method is private "
-							+ method.toGenericString()
-							+ " only protected public and package private are supported");
-		}
-		String potentialName = method.getAnnotation(Cached.class).name();
-		String potentialCategoryName = method.getAnnotation(Cached.class)
-				.category();
-		String cacheName = null;
+    public String getSpecialConfiguration(String name) {
+        return getCacheConfiguration().get(name);
+    }
 
-		if (potentialName.length() > 0) {
-			cacheName = potentialName;
-			logger.debug("using annotation specified name >" + potentialName
-					+ "<");
-		} else {
-			cacheName = method.getDeclaringClass().getCanonicalName() + " "
-					+ method.toGenericString();
-		}
+    public String putSpecialConfiguration(String name, String value) {
+        return getCacheConfiguration().put(name, value);
+    }
 
-		if (cacheName.length() > 32) {
-			if (!getUuidMap().containsKey(cacheName)) {
-				UUID uuid = UUID.randomUUID();
-				getUuidMap().put(cacheName, uuid);
-				logger.debug("mapping " + cacheName + ">>>" + uuid.toString());
-				cacheName = uuid.toString();
-			} else {
-				cacheName = getUuidMap().get(cacheName).toString();
-			}
+    public static String getCacheNameFromMethod(Method method) {
+        if (Modifier.isPrivate(method.getModifiers())) {
+            throw new NotImplementedException(
+                    "Method is private "
+                    + method.toGenericString()
+                    + " only protected public and package private are supported");
+        }
+        String potentialName = method.getAnnotation(Cached.class).name();
+        String potentialCategoryName = method.getAnnotation(Cached.class)
+                .category();
+        String cacheName = null;
 
-		}
-		if (potentialCategoryName != null && potentialCategoryName.length() > 0) {
-			if (getCategoryMap().containsKey(potentialCategoryName)) {
-				List<String> list = getCategoryMap().get(potentialCategoryName);
-				if (!list.contains(cacheName)) {
-					list.add(cacheName);
-				}
-			} else {
-				List<String> categoryList = new ArrayList<String>();
-				categoryList.add(cacheName);
-				getCategoryMap().put(potentialCategoryName, categoryList);
-			}
-		}
-		return cacheName;
+        if (potentialName.length() > 0) {
+            cacheName = potentialName;
+            logger.debug("using annotation specified name >" + potentialName
+                    + "<");
+        } else {
+            cacheName = method.getDeclaringClass().getCanonicalName() + " "
+                    + method.toGenericString();
+        }
 
-	}
+        if (cacheName.length() > 32) {
+            if (!getUuidMap().containsKey(cacheName)) {
+                UUID uuid = UUID.randomUUID();
+                getUuidMap().put(cacheName, uuid);
+                logger.debug("mapping " + cacheName + ">>>" + uuid.toString());
+                cacheName = uuid.toString();
+            } else {
+                cacheName = getUuidMap().get(cacheName).toString();
+            }
 
-	@Inject
-	public void setCacheManager(CacheManager cacheManager) {
-		this.cacheManager = cacheManager;
-	}
+        }
+        if (potentialCategoryName != null && potentialCategoryName.length() > 0) {
+            if (getCategoryMap().containsKey(potentialCategoryName)) {
+                List<String> list = getCategoryMap().get(potentialCategoryName);
+                if (!list.contains(cacheName)) {
+                    list.add(cacheName);
+                }
+            } else {
+                List<String> categoryList = new ArrayList<String>();
+                categoryList.add(cacheName);
+                getCategoryMap().put(potentialCategoryName, categoryList);
+            }
+        }
+        return cacheName;
 
-	public CacheManager getCacheManager() {
-		return cacheManager;
-	}
+    }
 
-	@Inject
-	public void setCacheKeyGenerator(CacheKeyGenerator cacheKeyGenerator) {
-		this.cacheKeyGenerator = cacheKeyGenerator;
-	}
+    @Inject
+    public void setCacheManager(CacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+    }
 
-	public CacheKeyGenerator getCacheKeyGenerator() {
-		return cacheKeyGenerator;
-	}
+    public CacheManager getCacheManager() {
+        return cacheManager;
+    }
 
-	public static Map<String, UUID> getUuidMap() {
-		return uuidMap;
-	}
+    @Inject
+    public void setCacheKeyGenerator(CacheKeyGenerator cacheKeyGenerator) {
+        this.cacheKeyGenerator = cacheKeyGenerator;
+    }
 
-	public static void setUuidMap(Map<String, UUID> uuidMap) {
-		CacheInterceptor.uuidMap = uuidMap;
-	}
+    public CacheKeyGenerator getCacheKeyGenerator() {
+        return cacheKeyGenerator;
+    }
 
-	public static Map<String, List<String>> getCategoryMap() {
-		return categoryMap;
-	}
+    public static Map<String, UUID> getUuidMap() {
+        return uuidMap;
+    }
 
-	public static void setCategoryMap(Map<String, List<String>> categoryMap) {
-		CacheInterceptor.categoryMap = categoryMap;
-	}
+    public static void setUuidMap(Map<String, UUID> uuidMap) {
+        CacheInterceptor.uuidMap = uuidMap;
+    }
 
-	public Injector getInjector() {
-		return CacheInterceptor.injector;
-	}
+    public static Map<String, List<String>> getCategoryMap() {
+        return categoryMap;
+    }
 
-	@Inject
-	public static void setInjector(Injector injector) {
-		CacheInterceptor.injector = injector;
-	}
+    public static void setCategoryMap(Map<String, List<String>> categoryMap) {
+        CacheInterceptor.categoryMap = categoryMap;
+    }
 
-	public static Map<String, String> getCacheConfiguration() {
-		return cacheConfiguration;
-	}
+    public Injector getInjector() {
+        return CacheInterceptor.injector;
+    }
 
-	public static void setCacheConfiguration(
-			Map<String, String> cacheConfiguration) {
-		CacheInterceptor.cacheConfiguration = cacheConfiguration;
-	}
+    @Inject
+    public static void setInjector(Injector injector) {
+        CacheInterceptor.injector = injector;
+    }
 
-	public Map<String, MethodInvocationHolder> getInvocations() {
-		return invocations;
-	}
+    public static Map<String, String> getCacheConfiguration() {
+        return cacheConfiguration;
+    }
 
-	@Inject
-	public void setInvocations(@Named(CacheModule.INVOCATION_MAP_NAME) Map<String, MethodInvocationHolder> invocations) {
-		this.invocations = invocations;
-	}
+    public static void setCacheConfiguration(
+            Map<String, String> cacheConfiguration) {
+        CacheInterceptor.cacheConfiguration = cacheConfiguration;
+    }
+
+    public Map<String, MethodInvocationHolder> getInvocations() {
+        return invocations;
+    }
+
+    @Inject
+    public void setInvocations(@Named(CacheModule.INVOCATION_MAP_NAME) Map<String, MethodInvocationHolder> invocations) {
+        this.invocations = invocations;
+    }
+
+    /**
+     * @return the slowScheduler
+     */
+    public Scheduler getSlowScheduler() {
+        return slowScheduler;
+    }
+
+    /**
+     * @param slowScheduler the slowScheduler to set
+     */
+    @Inject
+    public void setSlowScheduler(Scheduler slowScheduler) {
+        this.slowScheduler = slowScheduler;
+    }
 
 }

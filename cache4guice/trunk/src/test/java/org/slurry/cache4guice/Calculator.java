@@ -24,6 +24,8 @@ public interface Calculator {
 	public int serveStaleAndRefreshedDataSometimesThrowError(int i, int j);
 	
 	public Integer serveStaleAndRefreshedDataSometimesThrowError();
+
+    public int serveStaleAndRefreshedDataWithWait(Integer numberA, Integer numberB, Integer sleep);
 	
 	
 

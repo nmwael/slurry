@@ -17,126 +17,143 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.name.Named;
+import java.util.Random;
+import java.util.stream.IntStream;
 
 public class Cache4SelfPopulatingScheduledTest {
 
-	private Injector injector;
+    private Injector injector;
 
-	private Calculator cacheCalculator;
+    private Calculator cacheCalculator;
 
-	private Cache4GuiceHelper cache4GuiceHelper;
+    private Cache4GuiceHelper cache4GuiceHelper;
 
-	@Before
-	public void beforeTest() {
+    @Before
+    public void beforeTest() {
 
-		injector = Guice.createInjector(new GuiceMultibinderModule(),
-				new CacheModule());
+        injector = Guice.createInjector(new GuiceMultibinderModule(),
+                new CacheModule());
 
-		injector.injectMembers(this);
+        injector.injectMembers(this);
 
-	}
+    }
 
-	@After
-	public void afterTest() throws SchedulerException {
-		Scheduler scheduler = new StdSchedulerFactory().getScheduler();
-		scheduler.shutdown();
-		CacheManager.getInstance().shutdown();
-		;
+    @After
+    public void afterTest() throws SchedulerException {
+        Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+        scheduler.shutdown();
+        CacheManager.getInstance().shutdown();
 
-	}
+    }
 
-	@Test
-	public void SelfPopulatingScheduledCacheTest() throws InterruptedException {
-		int result = getCacheCalculator().serveStaleAndRefreshedData(1, 1);
-		int resultAfterSleep = getCacheCalculator().serveStaleAndRefreshedData(
-				1, 1);
-		Assert.assertEquals("Should be stale", result, resultAfterSleep);
-		Thread.sleep(2000);
-		resultAfterSleep = getCacheCalculator()
-				.serveStaleAndRefreshedData(1, 1);
-		Assert.assertTrue("Should be updated", result != resultAfterSleep);
+    @Test
+    public void SelfPopulatingScheduledCacheTest() throws InterruptedException {
+        int result = getCacheCalculator().serveStaleAndRefreshedData(1, 1);
+        int resultAfterSleep = getCacheCalculator().serveStaleAndRefreshedData(
+                1, 1);
+        Assert.assertEquals("Should be stale", result, resultAfterSleep);
+        Thread.sleep(2000);
+        resultAfterSleep = getCacheCalculator()
+                .serveStaleAndRefreshedData(1, 1);
+        Assert.assertTrue("Should be updated", result != resultAfterSleep);
 
-	}
+    }
 
-	@Test
-	public void SelfPopulatingScheduledCacheTestMultipleCallsException()
-			throws InterruptedException {
-		int result = getCacheCalculator()
-				.serveStaleAndRefreshedDataSometimesThrowError(1, 1);
-		for (Integer i = 0; i < 50; i++) {
-			int resultAfterSleep = getCacheCalculator().serveStaleAndRefreshedDataSometimesThrowError(1, 1);
-					Thread.sleep(100);
-			Assert.assertTrue("1+1=2", 5>=resultAfterSleep);
-			
-		}
-		Thread.sleep(6000);
-		int resultAfterSleep = getCacheCalculator().serveStaleAndRefreshedDataSometimesThrowError(1, 1);
-		
-		Assert.assertTrue("data did not recover. was<"+resultAfterSleep+">", 5<resultAfterSleep);
+    @Test
+    public void SelfPopulatingScheduledCacheTestMultipleCallsException()
+            throws InterruptedException {
+        int result = getCacheCalculator()
+                .serveStaleAndRefreshedDataSometimesThrowError(1, 1);
+        for (Integer i = 0; i < 50; i++) {
+            int resultAfterSleep = getCacheCalculator().serveStaleAndRefreshedDataSometimesThrowError(1, 1);
+            Thread.sleep(100);
+            Assert.assertTrue("1+1=2", 5 >= resultAfterSleep);
 
-	}
+        }
+        Thread.sleep(6000);
+        int resultAfterSleep = getCacheCalculator().serveStaleAndRefreshedDataSometimesThrowError(1, 1);
 
-	@Test
-	public void SelfPopulatingScheduledCacheTestMultipleCallsWithWait()
-			throws InterruptedException {
-		StopWatch stopwatch = new StopWatch();
-		Integer result = getCacheCalculator()
-				.serveStaleAndRefreshedDataSometimesThrowError();
+        Assert.assertTrue("data did not recover. was<" + resultAfterSleep + ">", 5 < resultAfterSleep);
 
-		StopWatch stopwatch2 = new StopWatch();
-		stopwatch2.start();
-		for (Integer i = 0; i < 50; i++) {
-			Thread.sleep(100);
-			stopwatch.start();
-			result = getCacheCalculator()
-					.serveStaleAndRefreshedDataSometimesThrowError();
-			stopwatch.stop();
-			Assert.assertTrue("Refresh took over <200>, was <"+stopwatch.getTime()+">", stopwatch.getTime()<200);
-			stopwatch.reset();
-		}
-		stopwatch2.stop();
-		Assert.assertTrue(stopwatch2.getTime()< 60*105);
-		Assert.assertTrue("cache should have been updated",5<result);
-		
+    }
 
-	}
+    @Test
+    public void SelfPopulatingScheduledCacheTestMultipleCallsWithWait()
+            throws InterruptedException {
+        StopWatch stopwatch = new StopWatch();
+        Integer result = getCacheCalculator()
+                .serveStaleAndRefreshedDataSometimesThrowError();
 
-	@Test
-	public void tet() throws InterruptedException{
-		StopWatch stopwatch = new StopWatch();
-		stopwatch.start();
-		Integer result = getCacheCalculator()
-				.sloowOperation(5);
-		stopwatch.stop();
-		Assert.assertTrue("Refresh took has to be over <10000>, was <"+stopwatch.getTime()+">", stopwatch.getTime()>100);
-		
-		stopwatch.reset();
-		Thread.sleep(10*60*60);
-		stopwatch.start();
-		result = getCacheCalculator()
-				.sloowOperation(5);
-		stopwatch.stop();
-		Assert.assertTrue("Refresh took over <200>, was <"+stopwatch.getTime()+">", stopwatch.getTime()<200);
-	}
-	
+        StopWatch stopwatch2 = new StopWatch();
+        stopwatch2.start();
+        for (Integer i = 0; i < 50; i++) {
+            Thread.sleep(100);
+            stopwatch.start();
+            result = getCacheCalculator()
+                    .serveStaleAndRefreshedDataSometimesThrowError();
+            stopwatch.stop();
+            Assert.assertTrue("Refresh took over <200>, was <" + stopwatch.getTime() + ">", stopwatch.getTime() < 200);
+            stopwatch.reset();
+        }
+        stopwatch2.stop();
+        Assert.assertTrue(stopwatch2.getTime() < 60 * 105);
+        Assert.assertTrue("cache should have been updated", 5 < result);
 
-	public Cache4GuiceHelper getCache4GuiceHelper() {
-		return cache4GuiceHelper;
-	}
+    }
 
-	@Inject
-	public void setCache4GuiceHelper(Cache4GuiceHelper cache4GuiceHelper) {
-		this.cache4GuiceHelper = cache4GuiceHelper;
-	}
+    @Test
+    public void tet() throws InterruptedException {
+        StopWatch stopwatch = new StopWatch();
+        stopwatch.start();
+        Integer result = getCacheCalculator()
+                .sloowOperation(5);
+        stopwatch.stop();
+        Assert.assertTrue("Refresh took has to be over <10000>, was <" + stopwatch.getTime() + ">", stopwatch.getTime() > 100);
 
-	public Calculator getCacheCalculator() {
-		return cacheCalculator;
-	}
+        stopwatch.reset();
+        Thread.sleep(10 * 60 * 60);
+        stopwatch.start();
+        result = getCacheCalculator()
+                .sloowOperation(5);
+        stopwatch.stop();
+        Assert.assertTrue("Refresh took over <200>, was <" + stopwatch.getTime() + ">", stopwatch.getTime() < 200);
+    }
 
-	@Inject
-	public void setCacheCalculator(
-			@Named(value = GuiceMultibinderModule.calculatorId01) Calculator cacheCalculator) {
-		this.cacheCalculator = cacheCalculator;
-	}
+    @Test
+    public void SelfPopulatingScheduledCacheTestMultipleCallsDifferentValues()
+            throws InterruptedException {
+                    Random random = new Random();
+        
+                    
+                    
+        for (Integer i = 0; i < 100; i++) {
+            
+
+            int resultAfterSleep = getCacheCalculator().serveStaleAndRefreshedDataWithWait(1, i,(random.nextInt(500)+1)*7);
+            resultAfterSleep=getCacheCalculator().serveStaleAndRefreshedData(1, i);
+        }
+       
+        Thread.sleep(6000);
+
+    }
+
+    public Cache4GuiceHelper getCache4GuiceHelper() {
+        return cache4GuiceHelper;
+    }
+
+    @Inject
+    public void setCache4GuiceHelper(Cache4GuiceHelper cache4GuiceHelper) {
+        this.cache4GuiceHelper = cache4GuiceHelper;
+    }
+
+    public Calculator getCacheCalculator() {
+        return cacheCalculator;
+    }
+
+    @Inject
+    public void setCacheCalculator(
+            @Named(value = GuiceMultibinderModule.calculatorId01) Calculator cacheCalculator) {
+        this.cacheCalculator = cacheCalculator;
+    }
 
 }
