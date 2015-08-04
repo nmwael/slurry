@@ -18,7 +18,6 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.name.Named;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 public class Cache4SelfPopulatingScheduledTest {
 
