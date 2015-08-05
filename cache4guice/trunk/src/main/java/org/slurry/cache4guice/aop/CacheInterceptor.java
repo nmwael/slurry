@@ -17,8 +17,6 @@ import javax.inject.Named;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.constructs.blocking.CacheEntryFactory;
-import net.sf.ehcache.constructs.blocking.SelfPopulatingCache;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -30,13 +28,14 @@ import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
 import org.slurry.cache4guice.annotation.Cached;
 import org.slurry.cache4guice.annotation.SpecialConfig;
-import org.slurry.cache4guice.cache.util.CacheEntryTimedFactory;
 import org.slurry.cache4guice.cache.util.MethodInvocationHolder;
 import org.slurry.cache4guice.module.CacheModule;
 import org.slurry.cache4guice.quartz.CacheUpdatingJob;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import java.util.Calendar;
+import java.util.Date;
 import org.quartz.Scheduler;
 
 public class CacheInterceptor implements MethodInterceptor {
@@ -55,33 +54,41 @@ public class CacheInterceptor implements MethodInterceptor {
 
     private static Injector injector;
 
-    private Map<String, MethodInvocationHolder> invocations;
+    private ConcurrentHashMap<String, ConcurrentHashMap<String, MethodInvocationHolder>> invocations;
 
     private Scheduler slowScheduler;
 
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        setupCacheIfNecessary(invocation);
+        
+        if(!sun.reflect.Reflection.getCallerClass(4).equals(org.slurry.cache4guice.quartz.CacheUpdatingJob.class)){
+            setupCacheIfNecessary(invocation);
 
-        return getResultFromCacheOrMethod(invocation);
+            addInvocationIfSelfPopulatingCache(invocation);
+
+            return getResultFromCacheOrMethod(invocation);
+        }else{
+            return invocation.proceed();
+        }
 
     }
 
     private Object getResultFromCacheOrMethod(MethodInvocation invocation)
             throws Throwable {
-        getInvocations().put(getCacheNameFromMethodInvocation(invocation) + getCacheKey(invocation), new MethodInvocationHolder(invocation));
+        Ehcache ehcache = getCache(invocation);
 
-        Ehcache cache = getCache(invocation);
+        //methodname+values
         String cacheKey = getCacheKey(invocation);
 
-        Element element = cache.get(cacheKey);
+        Element element = ehcache.get(cacheKey);
+        Object returnValue;
         if (element != null) {
-            logger.debug("Cache HIT >" + cache.getName() + "<");
-            return element.getValue();
+            logger.debug("Cache HIT >" + ehcache.getName() + "<");
+            returnValue = element.getValue();
         } else {
-            logger.debug("Cache MISS >" + cache.getName() + "<");
-            return getResultAndCache(invocation, cache, cacheKey);
+            logger.debug("Cache MISS >" + ehcache.getName() + "<");
+            returnValue =  getResultAndCache(invocation, ehcache, cacheKey);
         }
-
+        return returnValue;
     }
 
     private Object getResultAndCache(MethodInvocation invocation,
@@ -144,14 +151,14 @@ public class CacheInterceptor implements MethodInterceptor {
             rawCache.getCacheConfiguration().setEternal(true);
             // Problems with cache persistant from jvm to jvm
             //rawCache.getCacheConfiguration().persistence(new PersistenceConfiguration().strategy(Strategy.NONE));
-            CacheEntryFactory cacheEntryFactory = new CacheEntryTimedFactory(
-                    invocation, refresh);
-
-            SelfPopulatingCache selfPopulatingCache = new SelfPopulatingCache(
-                    rawCache, cacheEntryFactory);
-            getCacheManager().replaceCacheWithDecoratedCache(rawCache,
-                    selfPopulatingCache);
-
+//            CacheEntryFactory cacheEntryFactory = new CacheEntryTimedFactory(
+//                    invocation, refresh);
+//
+//            SelfPopulatingCache selfPopulatingCache = new SelfPopulatingCache(
+//                    rawCache, cacheEntryFactory);
+//            getCacheManager().replaceCacheWithDecoratedCache(rawCache,
+//                    selfPopulatingCache);
+//
             String classAndMethod = invocation.getMethod().getDeclaringClass()
                     .getCanonicalName()
                     + invocation.getMethod().toString();
@@ -161,12 +168,17 @@ public class CacheInterceptor implements MethodInterceptor {
             JobDetail cacheUpdatingJob = newJob(CacheUpdatingJob.class)
                     .withIdentity(classAndMethod + cacheNameFromMethodInvocation + "_Updatejob", packageString)
                     .build();
+            Calendar firstExecutionStartTime = Calendar.getInstance();
+            
+            firstExecutionStartTime.setTimeInMillis(firstExecutionStartTime.getTimeInMillis() + refresh);
 
-            Trigger trigger = newTrigger()
+            Trigger trigger = newTrigger().startAt(firstExecutionStartTime.getTime())
                     .withIdentity(classAndMethod + cacheNameFromMethodInvocation + "_Trigger", packageString)
                     .withSchedule(
                             simpleSchedule().withIntervalInMilliseconds(
                                     refresh + 20).repeatForever()).build();
+            
+            
             trigger.getJobDataMap().put(
                     CacheUpdatingJob.selfPopulatingCacheKey,
                     cacheNameFromMethodInvocation);
@@ -312,12 +324,12 @@ public class CacheInterceptor implements MethodInterceptor {
         CacheInterceptor.cacheConfiguration = cacheConfiguration;
     }
 
-    public Map<String, MethodInvocationHolder> getInvocations() {
+    public ConcurrentHashMap<String, ConcurrentHashMap<String, MethodInvocationHolder>> getInvocations() {
         return invocations;
     }
 
     @Inject
-    public void setInvocations(@Named(CacheModule.INVOCATION_MAP_NAME) Map<String, MethodInvocationHolder> invocations) {
+    public void setInvocations(@Named(CacheModule.INVOCATION_MAP_NAME) ConcurrentHashMap<String, ConcurrentHashMap<String, MethodInvocationHolder>> invocations) {
         this.invocations = invocations;
     }
 
@@ -334,6 +346,21 @@ public class CacheInterceptor implements MethodInterceptor {
     @Inject
     public void setSlowScheduler(Scheduler slowScheduler) {
         this.slowScheduler = slowScheduler;
+    }
+
+    private void addInvocationIfSelfPopulatingCache(MethodInvocation invocation) {
+        Boolean selfPopulatingScheduledCache = invocation.getMethod()
+                .getAnnotation(Cached.class).SelfPopulatingScheduledCache();
+        if (selfPopulatingScheduledCache) {
+            if(getInvocations().containsKey(getCacheNameFromMethodInvocation(invocation))){
+                getInvocations().get(getCacheNameFromMethodInvocation(invocation)).put(getCacheKey(invocation), new MethodInvocationHolder(invocation));
+            }
+            else{
+                final ConcurrentHashMap<String, MethodInvocationHolder> concurrentHashMapWithMethodAndValues = new ConcurrentHashMap<String,MethodInvocationHolder>();
+                concurrentHashMapWithMethodAndValues.put(getCacheKey(invocation), new MethodInvocationHolder(invocation));
+                getInvocations().put(getCacheNameFromMethodInvocation(invocation), concurrentHashMapWithMethodAndValues);
+            }
+        }
     }
 
 }

@@ -22,6 +22,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
 import org.quartz.Scheduler;
+import org.slurry.cache4guice.quartz.CacheUpdatingJob;
 
 public class CacheModule extends AbstractModule {
 
@@ -35,14 +36,15 @@ public class CacheModule extends AbstractModule {
         bind(CacheManager.class).toInstance(cacheManager);
         bind(CacheKeyGenerator.class).to(getCacheKeyGeneratorClass());
 
-        TypeLiteral<Map<String, MethodInvocationHolder>> mapType = new TypeLiteral<Map<String, MethodInvocationHolder>>() {
+        TypeLiteral<ConcurrentHashMap<String, ConcurrentHashMap<String,MethodInvocationHolder>>> mapType = new TypeLiteral<ConcurrentHashMap<String, ConcurrentHashMap<String,MethodInvocationHolder>>>() {
         };
         bind(mapType).annotatedWith(Names.named(INVOCATION_MAP_NAME))
-                .toInstance(new ConcurrentHashMap<String, MethodInvocationHolder>());
+                .toInstance(new ConcurrentHashMap<String, ConcurrentHashMap<String,MethodInvocationHolder>>());
+        // .toInstance(new ConcurrentHashMap<String, ConcurrentHashMap<String,MethodInvocationHolder>>());
 
         CacheInterceptor cacheInterceptor = new CacheInterceptor();
         requestInjection(cacheInterceptor);
-        requestStaticInjection(CacheInterceptor.class, CacheEntryTimedFactory.class);
+        requestStaticInjection(CacheInterceptor.class, CacheUpdatingJob.class);
 
         bindInterceptor(Matchers.any(), Matchers.annotatedWith(Cached.class),
                 cacheInterceptor);
