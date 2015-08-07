@@ -19,7 +19,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
 import net.sf.ehcache.CacheException;
 import net.sf.ehcache.Element;
 import org.aopalliance.intercept.MethodInvocation;
@@ -151,86 +150,6 @@ public class CacheUpdatingJob implements Job {
             logger.error("critical", e);
             throw new CacheException("failed", e);
 
-        }
-
-        return result;
-    }
-
-    public Object executeMethodWithValuesCurrentlyNotWorking(final String key, final MethodInvocation currentInvocation) {
-//		logger.debug(key.getClass().getCanonicalName() + " refreshing "
-//				+ key.toString());
-        Class<? extends Object> executingClass = currentInvocation.getMethod().getDeclaringClass();
-
-//
-//		final MethodInvocation currentInvocation = getInvocations().get(
-//				getCacheInterceptor().getCacheNameFromMethodInvocation(
-//						getInvocation())
-//						+ key).getMethodInvocation();
-        Object result = null;
-        try {
-            final Object instance = getInjector().getInstance(executingClass);
-            Method method = currentInvocation.getMethod();
-
-            final Method methodExecute = instance.getClass().getMethod(
-                    method.getName(), method.getParameterTypes());
-
-            Callable<Object> task = new Callable<Object>() {
-                @Override
-                public Object call() throws ExecutionException {
-                    Object result = null;
-
-                    if (logger.isDebugEnabled()) {
-                        Object[] arguments = currentInvocation.getArguments();
-                        String arguementsString = "";
-                        for (Object object : arguments) {
-                            arguementsString += " " + object.toString();
-                        }
-                        logger.debug("arguments >" + arguementsString
-                                + "<  key was >" + key.toString() + "<");
-                    }
-                    try {
-                        result = methodExecute.invoke(instance,
-                                currentInvocation.getArguments());
-                    } catch (IllegalArgumentException e) {
-                        logger.error("arguments not matching", e);
-                    } catch (IllegalAccessException e) {
-                        logger.error("unable to call", e);
-                    } catch (InvocationTargetException e) {
-                        logger.error("unable to update cache", e);
-
-                    }
-                    return result;
-                }
-            };
-            try {
-                // result = future.get(getRefreshTime()+20, TimeUnit.MINUTES);
-                result = task.call();
-            } catch (TimeoutException ex) {
-                logger.warn("timed out aborting", ex);
-            } catch (InterruptedException e) {
-                logger.error("interupted", e);
-            } catch (Exception e) {
-                logger.error("Exception", e);
-            }
-
-            if (logger.isDebugEnabled()) {
-                if (result != null) {
-                    logger.debug("result >" + result.toString() + "<");
-                } else {
-                    logger.debug("result >null<");
-                }
-            }
-            if (result == null) {
-                throw new NullPointerException("Cache can never be null");
-            }
-
-        } catch (RuntimeException e) {
-            logger.error("critical", e);
-            throw new CacheException("failed", e);
-
-        } catch (NoSuchMethodException e) {
-            logger.error("critical", e);
-            throw new CacheException("failed", e);
         }
 
         return result;

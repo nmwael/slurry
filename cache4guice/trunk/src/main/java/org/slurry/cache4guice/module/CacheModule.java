@@ -1,6 +1,5 @@
 package org.slurry.cache4guice.module;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.sf.ehcache.CacheManager;
@@ -14,7 +13,6 @@ import org.slurry.cache4guice.aop.CacheKeyGenerator;
 import org.slurry.cache4guice.cache.StringBasedKeyGenerator;
 import org.slurry.cache4guice.cache.util.Cache4GuiceHelper;
 import org.slurry.cache4guice.cache.util.Cache4GuiceHelperImpl;
-import org.slurry.cache4guice.cache.util.CacheEntryTimedFactory;
 import org.slurry.cache4guice.cache.util.MethodInvocationHolder;
 
 import com.google.inject.AbstractModule;

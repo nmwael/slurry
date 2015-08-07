@@ -48,8 +48,10 @@ public @interface Cached {
          */
         boolean slowOperation() default false;
         
-        
-        
+    Class defaultClassToReturn() default DEFAULT.class;
+
+    public static final class DEFAULT {}    
+    //Class defaultClassToReturn() default Cached.class;
 	
 
 }

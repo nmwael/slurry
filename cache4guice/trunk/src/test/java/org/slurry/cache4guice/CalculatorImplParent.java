@@ -69,12 +69,12 @@ public class CalculatorImplParent implements Calculator {
 
     private int sloowOperationCounter = 0;
 
-    @Cached(SelfPopulatingScheduledCache = true, refreshTime = 1500)
+    @Cached(SelfPopulatingScheduledCache = true, refreshTime = 1500, defaultClassToReturn = Integer.class)
     public Integer sloowOperation(Integer number) {
         logger.debug("was called +>" + sloowOperationCounter + "<");
         try {
             logger.debug("begin sleep");
-            Thread.sleep(100);
+            Thread.sleep(1000);
             sloowOperationCounter++;
             logger.warn("result>" + sloowOperationCounter + "<");
             return sloowOperationCounter;

@@ -101,20 +101,22 @@ public class Cache4SelfPopulatingScheduledTest {
     }
 
     @Test
-    public void tet() throws InterruptedException {
+    public void testSlow() throws InterruptedException {
         StopWatch stopwatch = new StopWatch();
         stopwatch.start();
         Integer result = getCacheCalculator()
                 .sloowOperation(5);
         stopwatch.stop();
-        Assert.assertTrue("Refresh took has to be over <10000>, was <" + stopwatch.getTime() + ">", stopwatch.getTime() > 100);
+        Assert.assertEquals(new Integer(0), result);
+        Assert.assertTrue("Refresh took has to be over <10000>, was <" + stopwatch.getTime() + ">", stopwatch.getTime() < 100);
 
         stopwatch.reset();
-        Thread.sleep(10 * 60 * 60);
+        Thread.sleep(1100);
         stopwatch.start();
         result = getCacheCalculator()
                 .sloowOperation(5);
         stopwatch.stop();
+        Assert.assertEquals(new Integer(1), result);
         Assert.assertTrue("Refresh took over <200>, was <" + stopwatch.getTime() + ">", stopwatch.getTime() < 200);
     }
 
