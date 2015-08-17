@@ -6,10 +6,10 @@ public interface CacheKeyGenerator {
 
 	/**
 	 * gets key with arguments
-	 * @param invocation
-	 * @return
+	 * @param invocation MethodInvocation
+	 * @return key
 	 */
-	public String getCacheKey(MethodInvocation invocation);
+    public String getCacheKey(MethodInvocation invocation);
 
 
 

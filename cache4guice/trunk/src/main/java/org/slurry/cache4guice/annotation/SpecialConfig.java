@@ -18,8 +18,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface SpecialConfig {
 	/**
-	 * special configuration name
-	 * @return
+	 * @return special configuration name
 	 */
 	String cacheConfigurationName();
 

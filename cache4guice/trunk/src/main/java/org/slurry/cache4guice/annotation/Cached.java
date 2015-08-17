@@ -18,19 +18,19 @@ import java.lang.annotation.Target;
 public @interface Cached {
 	/**
 	 * Optional custom name, if none specified a name derived from method signature will be created.
-	 * @return
+	 * @return Optional custom name
 	 */
 	String name() default "";
 	
-	/**
-	 * Optional category name
-	 * @see org.slurry.cache4guice.cache.util.getCaches(String category)
-	 * @return
-	 */
-	String category() default "";
+/**
+ * 
+ * @return Optional category name
+ */
+        String category() default "";
 	
 	/**
 	 * Optional should the cache self update
+	 * @return true false
 	 **/
 	boolean SelfPopulatingScheduledCache() default false;
 	
@@ -38,13 +38,14 @@ public @interface Cached {
 	 * Used together with SelfPopulatingScheduledCache to specify the time between updates
 	 * specified in milliseconds
 	 * Will Have a grace time of 20 milliseconds used to detecting timeout
-	 * @return
+	 * @return refreshTime
 	 */
 	long refreshTime() default 120;
         
         /**
-         * Used together with SelfPopulatingScheduledCache , if true the updating job will be placed in the "slow" scheduler with the rest of the slow operations
-         * @return 
+         * Used together with SelfPopulatingScheduledCache , if true the updating job will 
+         * be placed in the "slow" scheduler with the rest of the slow operations
+         * @return slowOperation
          */
         boolean slowOperation() default false;
         

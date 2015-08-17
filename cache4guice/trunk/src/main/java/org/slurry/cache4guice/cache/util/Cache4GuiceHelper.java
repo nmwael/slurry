@@ -9,7 +9,7 @@ public interface Cache4GuiceHelper {
 	/**
 	 * finds all caches for the class
 	 * 
-	 * @param searchClass
+	 * @param searchClass class
 	 * @return
 	 */
 	public List<Ehcache> findCaches(Class<? extends Object> searchClass);
@@ -30,7 +30,7 @@ public interface Cache4GuiceHelper {
 	 * Works only if the methods adherent to this category have been called or are eagerly loaded.
 	 * Otherwise you will get no caches
 	 * @see com.google.inject.Singleton 
-	 * @param name given name, or name derived from method
+	 * @param category given name, or name derived from method
 	 * @return List of net.sf.ehcache.Ehcache
 	 */
 	public List<Ehcache> getCaches(String category);
