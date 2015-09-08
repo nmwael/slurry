@@ -4,14 +4,13 @@
 	<groupId>org.slurry</groupId>
 	<artifactId>cache4guice</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.23-SNAPSHOT</version>
+	<version>1.0.25-SNAPSHOT</version>
 	<name>cache4guice</name>
 	<url>http://code.google.com/p/slurry/</url>
 	<parent>
 		<artifactId>slurryparent</artifactId>
 		<groupId>org.slurry</groupId>
-		<relativePath>../../pom.xml</relativePath>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0</version>
 	</parent>
 	<dependencies>
 		<dependency>
