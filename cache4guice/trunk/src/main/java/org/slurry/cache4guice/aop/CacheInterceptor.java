@@ -84,7 +84,7 @@ public class CacheInterceptor implements MethodInterceptor {
         Object returnValue;
         if (element != null) {
             logger.debug("Cache HIT >" + ehcache.getName() + "<");
-            returnValue = element.getValue();
+            returnValue = element.getObjectValue();
         } else {
             logger.debug("Cache MISS >" + ehcache.getName() + "<");
             returnValue = getResultAndCache(invocation, ehcache, cacheKey);
