@@ -19,6 +19,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
+import java.lang.management.ManagementFactory;
+import javax.management.MBeanServer;
+import net.sf.ehcache.management.ManagementService;
 import org.quartz.Scheduler;
 import org.slurry.cache4guice.quartz.CacheUpdatingJob;
 
@@ -31,13 +34,18 @@ public class CacheModule extends AbstractModule {
 
     protected void configure() {
         CacheManager cacheManager = CacheManager.create();
+        if (logger.isDebugEnabled()) {
+            MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+            ManagementService.registerMBeans(cacheManager, mBeanServer, true, true, true, true);
+        }
+
         bind(CacheManager.class).toInstance(cacheManager);
         bind(CacheKeyGenerator.class).to(getCacheKeyGeneratorClass());
 
-        TypeLiteral<ConcurrentHashMap<String, ConcurrentHashMap<String,MethodInvocationHolder>>> mapType = new TypeLiteral<ConcurrentHashMap<String, ConcurrentHashMap<String,MethodInvocationHolder>>>() {
+        TypeLiteral<ConcurrentHashMap<String, ConcurrentHashMap<String, MethodInvocationHolder>>> mapType = new TypeLiteral<ConcurrentHashMap<String, ConcurrentHashMap<String, MethodInvocationHolder>>>() {
         };
         bind(mapType).annotatedWith(Names.named(INVOCATION_MAP_NAME))
-                .toInstance(new ConcurrentHashMap<String, ConcurrentHashMap<String,MethodInvocationHolder>>());
+                .toInstance(new ConcurrentHashMap<String, ConcurrentHashMap<String, MethodInvocationHolder>>());
         // .toInstance(new ConcurrentHashMap<String, ConcurrentHashMap<String,MethodInvocationHolder>>());
 
         CacheInterceptor cacheInterceptor = new CacheInterceptor();
